@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace PawnShopBE.Core.Const
 {
     public enum RansomConsts
-    {    
-        ON_TIME = 1,
-        SOON = 2,
+    {
+        SOON = 1,
+        ON_TIME = 2,  
         LATE = 3
     }
 }

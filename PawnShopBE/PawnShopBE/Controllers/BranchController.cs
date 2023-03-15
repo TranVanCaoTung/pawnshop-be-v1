@@ -22,16 +22,16 @@ namespace PawnShopBE.Controllers
             _mapper = mapper;
         }
         private Validation<BranchDTO> _validation;
-        [Authorize]
+        //[Authorize]
         [HttpPost("branch")]
         public async Task<IActionResult> CreateBranch(BranchDTO request)
         {
             //Check Validation
-            var checkValidation = await _validation.CheckValidation(request);
-            if (checkValidation != null)
-            {
-                return BadRequest(checkValidation);
-            }
+            //var checkValidation = await _validation.CheckValidation(request);
+            //if (checkValidation != null)
+            //{
+            //    return BadRequest(checkValidation);
+            //}
             var branch = _mapper.Map<Branch>(request);
             var response = await _branchService.CreateBranch(branch);
 

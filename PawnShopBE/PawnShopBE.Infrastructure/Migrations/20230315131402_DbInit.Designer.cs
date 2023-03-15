@@ -12,7 +12,7 @@ using PawnShopBE.Infrastructure.Helpers;
 namespace PawnShopBE.Infrastructure.Migrations
 {
     [DbContext(typeof(DbContextClass))]
-    [Migration("20230313125312_DbInit")]
+    [Migration("20230315131402_DbInit")]
     partial class DbInit
     {
         /// <inheritdoc />
@@ -144,6 +144,9 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("ContractId");
 
                     b.HasIndex("BranchId");
@@ -153,6 +156,8 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("PackageId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Contract", (string)null);
                 });
@@ -758,6 +763,12 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("PawnShopBE.Core.Models.User", "User")
+                        .WithMany("Contracts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Branch");
 
                     b.Navigation("ContractAsset");
@@ -765,6 +776,8 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Package");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.ContractAsset", b =>
@@ -957,6 +970,11 @@ namespace PawnShopBE.Infrastructure.Migrations
             modelBuilder.Entity("PawnShopBE.Core.Models.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.User", b =>
+                {
+                    b.Navigation("Contracts");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Warehouse", b =>

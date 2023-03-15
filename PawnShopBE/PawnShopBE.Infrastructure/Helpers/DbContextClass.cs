@@ -85,6 +85,7 @@ namespace PawnShopBE.Infrastructure.Helpers
                 entity.HasOne(c => c.Package).WithMany(p => p.Contracts).HasForeignKey(c => c.PackageId).IsRequired(true);
                 entity.HasOne(c => c.Branch).WithMany(p => p.Contracts).HasForeignKey(c => c.BranchId).IsRequired(true);
                 entity.HasOne(c => c.ContractAsset).WithMany(p => p.Contracts).HasForeignKey(c => c.ContractAssetId).IsRequired(true);
+                entity.HasOne(c => c.User).WithMany(p => p.Contracts).HasForeignKey(c => c.UserId).IsRequired(true);
             });
 
             modelBuilder.Entity<InterestDiary>(entity =>

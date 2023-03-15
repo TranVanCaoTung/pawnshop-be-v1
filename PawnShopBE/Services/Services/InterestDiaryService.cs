@@ -98,10 +98,7 @@ namespace Services.Services
         {
             if (contractId != null)
             {
-                return (InterestDiary) await _interestDiaryRepository.GetDiaryByContractId(contractId);
-                
-                    
-                
+                return (InterestDiary) await _interestDiaryRepository.GetDiaryByContractId(contractId);              
             }
             return null;
         }

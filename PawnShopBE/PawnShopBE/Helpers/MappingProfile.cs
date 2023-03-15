@@ -85,10 +85,13 @@ namespace PawnShopBE.Helpers
             CreateMap<ContractDTO, Contract>()
                 .ForMember(
                 dest => dest.BranchId,
-                opt => opt.MapFrom(src => src.BranchId))
+                opt => opt.MapFrom(src => src.BranchId))               
                 .ForMember(
                 dest => dest.CustomerId,
                 opt => opt.MapFrom(src => src.CustomerId))
+                .ForMember(
+                dest => dest.UserId,
+                opt => opt.MapFrom(src => src.UserId))
                 .ForMember(
                 dest => dest.PackageId,
                 opt => opt.MapFrom(src => src.PackageId))

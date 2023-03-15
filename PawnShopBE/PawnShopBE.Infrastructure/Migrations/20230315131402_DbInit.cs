@@ -344,6 +344,7 @@ namespace PawnShopBE.Infrastructure.Migrations
                     ContractId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PackageId = table.Column<int>(type: "int", nullable: false),
                     BranchId = table.Column<int>(type: "int", nullable: false),
                     ContractAssetId = table.Column<int>(type: "int", nullable: false),
@@ -387,6 +388,12 @@ namespace PawnShopBE.Infrastructure.Migrations
                         column: x => x.PackageId,
                         principalTable: "Package",
                         principalColumn: "PackageId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Contract_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -448,6 +455,7 @@ namespace PawnShopBE.Infrastructure.Migrations
                 {
                     RansomId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    ContractId = table.Column<int>(type: "int", nullable: false),
                     Payment = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Penalty = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalPay = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -455,8 +463,7 @@ namespace PawnShopBE.Infrastructure.Migrations
                     PaidDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ProofImg = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ContractId = table.Column<int>(type: "int", nullable: false)
+                    ProofImg = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -493,6 +500,11 @@ namespace PawnShopBE.Infrastructure.Migrations
                 name: "IX_Contract_PackageId",
                 table: "Contract",
                 column: "PackageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Contract_UserId",
+                table: "Contract",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ContractAsset_PawnableProductId",
@@ -597,9 +609,6 @@ namespace PawnShopBE.Infrastructure.Migrations
                 name: "Contract");
 
             migrationBuilder.DropTable(
-                name: "User");
-
-            migrationBuilder.DropTable(
                 name: "ContractAsset");
 
             migrationBuilder.DropTable(
@@ -609,10 +618,7 @@ namespace PawnShopBE.Infrastructure.Migrations
                 name: "Package");
 
             migrationBuilder.DropTable(
-                name: "Branch");
-
-            migrationBuilder.DropTable(
-                name: "Role");
+                name: "User");
 
             migrationBuilder.DropTable(
                 name: "PawnableProduct");
@@ -622,6 +628,12 @@ namespace PawnShopBE.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Kyc");
+
+            migrationBuilder.DropTable(
+                name: "Branch");
+
+            migrationBuilder.DropTable(
+                name: "Role");
         }
     }
 }

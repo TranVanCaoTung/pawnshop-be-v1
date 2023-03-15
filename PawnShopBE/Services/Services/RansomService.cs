@@ -24,14 +24,36 @@ namespace Services.Services
             if (contract != null)
             {
                 var ransom = new Ransom();
+                
                 ransom.ContractId = contract.ContractId;
-                ransom.Payment = contract.Loan + contract.TotalProfit;
-                ransom.Penalty = 0;
+                ransom.Payment = contract.Loan;
                 ransom.PaidMoney = 0;
                 ransom.PaidDate = null;
-                ransom.Status = (int) RansomConsts.ON_TIME;
+                ransom.Status = (int) RansomConsts.SOON;
                 ransom.Description = null;
                 ransom.ProofImg = null;
+                if (contract.Package.Day < 120)
+                {
+                    ransom.Penalty = 0;
+                }
+                // Penalty for pay all before duedate (50% interest paid & contract must > 6 months)
+                // Penalty for contract 6 months
+                else if (contract.Package.Day == 120)
+                {
+                    ransom.Penalty = ransom.Payment *(decimal) 0.03;
+                }
+                // Penalty for contract 9 months
+                else if (contract.Package.Day == 270)
+                {
+                    ransom.Penalty = ransom.Payment * (decimal) 0.04;
+                }
+                // Penalty for contract 12 months
+                else if (contract.Package.Day == 360)
+                {
+                    ransom.Penalty = ransom.Payment * (decimal) 0.05;
+                }
+                ransom.TotalPay = contract.Loan + contract.TotalProfit + ransom.Penalty;
+                
                 await _unitOfWork.Ransoms.Add(ransom);
 
                 var result = _unitOfWork.Save();

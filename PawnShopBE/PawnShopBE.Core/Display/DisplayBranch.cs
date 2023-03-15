@@ -14,5 +14,8 @@ namespace PawnShopBE.Core.Display
         public decimal fund { get; set; }
         public decimal loan { get; set; }
         public decimal recveivedInterest { get; set; }
+        public string Address { get; set; }
+        public string PhoneNumber { get; set; }
+        public int Status { get; set; }
     }
 }
