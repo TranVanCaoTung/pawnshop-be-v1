@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Org.BouncyCastle.Utilities;
+using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Display;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
@@ -34,7 +35,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPost("customer/createRelative/{id}")]
-        public async Task<IActionResult> createCustomerRelative(Guid id, CustomerDTO customer)
+        public async Task<IActionResult> createCustomerRelative(Guid id, Relative_Job_DependentDTO customer)
         {
             var respone = await _customer.createRelative(id,customer);
             if (respone)
@@ -43,17 +44,20 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        //private Validation<CustomerDTO> _validation;
+        private Validation<CustomerDTO> _validation=new Validation<CustomerDTO>();
       
-         [HttpPost("customer/{id}")]
+        [HttpPost("customer")]
         public async Task<IActionResult> CreateCustomer(CustomerDTO customer)
         {
-            //Check Validation
-            //var checkValidation = await _validation.CheckValidation(customer);
-            //if (checkValidation != null)
-            //{
-            //    return BadRequest(checkValidation);
-            //}
+          //  Check Validation
+            var checkValidation = await _validation.CheckValidation(customer);
+            if (checkValidation != null)
+            {
+                return BadRequest(checkValidation);
+            }
+            //get Kyc id
+            customer.KycId = await _customer.createKyc(customer);
+            //create Customer
             var customerMap= _mapper.Map<Customer>(customer);
             var respone=await _customer.CreateCustomer(customerMap);
             if (respone)
@@ -63,11 +67,12 @@ namespace PawnShopBE.Controllers
             return BadRequest(respone);
         }
 
-        [HttpGet("customer/list/{numPage}")]
+        [HttpGet("customer/activelist/{numPage}")]
         public async Task<IActionResult> GetAllCustomers(int numPage)
         {
             var listCustomer = await _customer.GetAllCustomer(numPage);
-            var respone = _mapper.Map<IEnumerable<DisplayCustomer>>(listCustomer);
+            var customerActiveList = from c in listCustomer where c.Status == (int)CustomerConst.ACTIVE select c;
+            var respone = _mapper.Map<IEnumerable<DisplayCustomer>>(customerActiveList);
             if (respone != null)
             {
                 respone = await _customer.getCustomerHaveBranch(respone, listCustomer);
@@ -75,7 +80,20 @@ namespace PawnShopBE.Controllers
             }
             return NotFound();
         }
-       
+        [HttpGet("customer/blacklist/{numPage}")]
+        public async Task<IActionResult> GetAllCustomersBlackList(int numPage)
+        {
+            var listCustomer = await _customer.GetAllCustomer(numPage);
+            var customerBlackList = from c in listCustomer where c.Status == (int)CustomerConst.BLACKLIST select c;
+            var respone = _mapper.Map<IEnumerable<DisplayCustomer>>(customerBlackList);
+            if (respone != null)
+            {
+                respone = await _customer.getCustomerHaveBranch(respone, listCustomer);
+                return Ok(respone);
+            }
+            return NotFound();
+        }
+
         [HttpGet("customer/{id}")]
         public async Task<IActionResult> GetCustomerById(Guid id)
         {

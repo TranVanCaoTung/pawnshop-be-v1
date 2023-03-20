@@ -40,6 +40,7 @@ namespace PawnShopBE.Infrastructure.Helpers
         public DbSet<CustomerRelativeRelationship> CustomerRelativeRelationship { get; set; }
         public DbSet<Kyc> Kyc { get; set; }
         public DbSet<Ransom> Ransom { get; set; }
+        public DbSet<Admin> Admin { get; set; }
 
         #endregion
 
@@ -175,6 +176,11 @@ namespace PawnShopBE.Infrastructure.Helpers
                 entity.HasKey(r => r.RansomId);
                 entity.HasOne(r => r.Contract).WithOne(c => c.Ransom).HasForeignKey<Ransom>(r => r.ContractId).IsRequired(true);
 
+            });
+            modelBuilder.Entity<Admin>(entity =>
+            {
+                entity.ToTable("Admin");
+                entity.HasNoKey();
             });
         }
 

@@ -13,9 +13,6 @@ namespace PawnShopBE.Core.Models
     {
         [Key]
         public Guid Id { get; set; }
-        public Guid UserId { get; set; }
-        [ForeignKey("UserId")]
-        public User user { get; set; }
         public string Token { get; set; }
         public string JwtID { get; set; }
         public bool IsUsed { get; set; }

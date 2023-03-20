@@ -1,4 +1,6 @@
-﻿using PawnShopBE.Core.Interfaces;
+﻿using PawnShopBE.Core.Display;
+using PawnShopBE.Core.DTOs;
+using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
 using Services.Services.IServices;
 using System;
@@ -13,26 +15,43 @@ namespace Services.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly CustomerRelativeRelationship customerRelativeRelationship;
-        public CustomerRelativeService(IUnitOfWork unitOfWork)
+        private readonly IServiceProvider _serviceProvider;
+        public CustomerRelativeService(IUnitOfWork unitOfWork, IServiceProvider serviceProvider            )
         {
             _unitOfWork = unitOfWork;
+            _serviceProvider = serviceProvider;
         }
+
+
         public async Task<bool> CreateCustomerRelative(CustomerRelativeRelationship customerRelative)
         {
             if (customerRelative != null)
             {
                 await _unitOfWork.CustomersRelativeRelationships.Add(customerRelative);
                 var result = _unitOfWork.Save();
-                if (result > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
+                if (result > 0) 
+                { 
+                  if (await plusPoint(customerRelative))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
+        }
+        private async Task<bool> plusPoint(CustomerRelativeRelationship relatives)
+        {
+            var provider= _serviceProvider.GetService(typeof(ICustomerService)) as ICustomerService;
+            var customerList = await provider.GetAllCustomer(0);
+            var customerIenumerable = from c in customerList where c.CustomerId == relatives.CustomerId select c;
+            var customer = new Customer();
+            customer = customerIenumerable.FirstOrDefault();
+            //plus point
+            customer.Point += 25;
+            if (await provider.UpdateCustomer(customer))
+                return true;
+            else
+                return false;
         }
 
         public async Task<bool> DeleteCustomerRelative(Guid CustomerRelativeId)
@@ -68,6 +87,8 @@ namespace Services.Services
         {
             throw new NotImplementedException();
         }
+
+
 
         public async Task<bool> UpdateCustomerRelative(CustomerRelativeRelationship customerRelative)
         {

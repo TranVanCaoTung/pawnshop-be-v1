@@ -2,6 +2,7 @@
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Core.Requests;
 using Services.Services.IServices;
 using System;
 using System.Collections.Generic;
@@ -59,17 +60,18 @@ namespace Services.Services
             foreach (var x in contract)
             {
                 branchDetail.loanContract = x.Loan;
-                branchDetail.interestRecommend = x.TotalProfit;
+                branchDetail.expectProfit= x.TotalProfit;
                 branchDetail.contractCode = x.ContractCode;
                 branchDetail.statusContract = x.Status;
             }
+            // nợ khách cần trả
             foreach (var x in diary)
             {
                 branchDetail.debtCustomers = x.TotalPay - x.PaidMoney;
             }
             return branchDetail;
         }
-        private int getContractId(IEnumerable<PawnShopBE.Core.Models.Contract> contract)
+        private int getContractId(IEnumerable<Contract> contract)
         {
             var getContractId = from c in contract select c.ContractId;
             var contractId = getContractId.First();
@@ -153,11 +155,11 @@ namespace Services.Services
             return null;
         }
 
-        public async Task<bool> UpdateBranch(Branch branch)
+        public async Task<bool> UpdateBranch(int id, BranchRequest branch)
         {
             if (branch != null)
             {
-                var branchUpdate = await _unitOfWork.Branches.GetById(branch.BranchId);
+                var branchUpdate = await _unitOfWork.Branches.GetById(id);
                 if (branchUpdate != null)
                 {
                     branchUpdate.BranchName = branch.BranchName;

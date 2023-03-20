@@ -7,7 +7,7 @@ using Services.Services.IServices;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v1/job")]
     [ApiController]
     public class JobController : ControllerBase
     {
@@ -20,7 +20,7 @@ namespace PawnShopBE.Controllers
             _mapper=mapper;
         }
 
-        [HttpGet("job")]
+        [HttpGet("getAll")]
         public async Task<IActionResult> GetAllJob() {
             var respone =await _jobService.GetJob();
             if (respone != null)
@@ -29,9 +29,9 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        private Validation<JobDTO> _validation;
+        private Validation<JobDTO> _validation=new Validation<JobDTO>();
         
-        [HttpPost("job")]
+        [HttpPost("createJob")]
         public async Task<IActionResult> CreateJob(JobDTO job)
         {
             //Check Validation
@@ -49,7 +49,7 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpDelete("job/{id}")]
+        [HttpDelete("deleteJob/{id}")]
         public async Task<IActionResult> DeleteJob(int id)
         {
             var respone = await _jobService.DeleteJob(id);
@@ -60,7 +60,7 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("job/{id}")]
+        [HttpPut("updateJob/{id}")]
         public async Task<IActionResult> UpdateJob(int id,JobDTO job)
         {
             var jobUpdate=_mapper.Map<Job>(job);

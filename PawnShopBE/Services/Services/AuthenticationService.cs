@@ -33,7 +33,7 @@ namespace Services.Services
             var result=await _context.Set<RefeshToken>().ToListAsync();
             return result;
         }
-        public async Task<TokenModel> GenerateToken(User user)
+        public async Task<TokenModel> GenerateToken(Admin admin)
         {
             var jwtToken = new JwtSecurityTokenHandler();
             var secretKeyByte = Encoding.UTF8.GetBytes(_appsetting.SecretKey);
@@ -41,14 +41,10 @@ namespace Services.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Email,user.Email),
-                    new Claim(ClaimTypes.Name, user.FullName),
                     new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                    new Claim("UserName",user.UserName),
-                    new Claim("Id", user.UserId.ToString()),
                 }),
 
-                Expires = DateTime.UtcNow.AddMinutes(1),
+                Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),
                 SecurityAlgorithms.HmacSha512Signature)
             };
@@ -61,13 +57,12 @@ namespace Services.Services
             var refeshTokenEntity = new RefeshToken
             {
                 Id = Guid.NewGuid(),
-                UserId = user.UserId,
                 JwtID = token.Id,
                 Token = resfulToken,
                 IsUsed = false,
                 IsRevoked = false,
                 IssuedAt = DateTime.UtcNow,
-                ExpiredAt = DateTime.UtcNow.AddMinutes(2),
+                ExpiredAt = DateTime.UtcNow.AddHours(1),
             };
 
             await _context.AddAsync(refeshTokenEntity);
@@ -170,9 +165,8 @@ namespace Services.Services
                 await _context.SaveChangesAsync();
 
                 //create new Token
-                var user = await _context.User.SingleOrDefaultAsync(us => us.UserId ==
-                storedToken.UserId);
-                var token = await GenerateToken(user);
+                var admin = await _context.Admin.SingleOrDefaultAsync(ad => ad.UserName =="Admin");
+                var token = await GenerateToken(admin);
 
                 return Response(true, "Renew Token Access", token);
             }

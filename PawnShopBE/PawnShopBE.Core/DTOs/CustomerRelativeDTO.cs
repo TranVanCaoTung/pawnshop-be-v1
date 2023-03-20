@@ -25,6 +25,8 @@ namespace PawnShopBE.Core.DTOs
         public string Address { get; set; }
 
         [Phone(ErrorMessage = "Nhập đúng định dạng số điện thoại")]
+        [StringLength(11, MinimumLength = 10,
+            ErrorMessage = "Số điện thoại phải từ 10-11 số")]
         public string RelativePhone { get; set; }
     }
 }

@@ -10,6 +10,7 @@ namespace PawnShopBE.Core.DTOs
     public class LedgerDTO
     {
         public int LedgerId { get; set; }
+        public int branchId { get; set; }
 
         [Range(1000, 100000000, ErrorMessage = "Tiền nhập phải từ 1000 - 100Tr")]
         public decimal ReceivedPrincipal { get; set; }

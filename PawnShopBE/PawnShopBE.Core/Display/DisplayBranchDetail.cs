@@ -15,7 +15,7 @@ namespace PawnShopBE.Core.Display
         public decimal fund { get; set; }
         public decimal loanBranch { get; set; }
         public decimal loanContract { get; set; }
-        public decimal interestRecommend { get; set; }
+        public decimal expectProfit{ get; set; }
         public decimal recveivedInterest { get; set; }
         public decimal debtCustomers { get; set; }
         public int statusContract { get; set; }

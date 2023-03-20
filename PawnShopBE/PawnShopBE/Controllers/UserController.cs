@@ -10,7 +10,7 @@ using Services.Services.IServices;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v1/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -21,7 +21,7 @@ namespace PawnShopBE.Controllers
             _userService = userService;
             _mapper = mapper;
         }
-        [HttpPost("user/recoverPassword")]
+        [HttpPost("recoverPassword")]
         public async Task<IActionResult> recoverPass(UserDTO user)
         {
             var respone = await _userService.sendEmail(user);
@@ -31,10 +31,10 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        private Validation<UserDTO> _validation;
+        private Validation<UserDTO> _validation=new Validation<UserDTO>();
        
-       [Authorize]
-        [HttpPost("user")]
+        [Authorize]
+        [HttpPost("createUser")]
         public async Task<IActionResult> CreateUser(UserDTO request)
         {
             //Check Validation
@@ -56,7 +56,7 @@ namespace PawnShopBE.Controllers
             }
         }
         [Authorize]
-        [HttpGet("user/{numPage}")]
+        [HttpGet("getAll/{numPage}")]
         public async Task<IActionResult> getUserList(int numPage)
         {
             var userList = await _userService.GetAllUsers(numPage);
@@ -67,7 +67,7 @@ namespace PawnShopBE.Controllers
             return Ok(userList);
         }
 
-        [HttpGet("user/{id:guid}")]
+        [HttpGet("getUserById/{userId:guid}")]
         public async Task<IActionResult> GetUserById(Guid userId)
         {
             var user = await _userService.GetUserById(userId);
@@ -82,7 +82,7 @@ namespace PawnShopBE.Controllers
             }
         }
         [Authorize]
-        [HttpPut("user/{id:guid}")]
+        [HttpPut("updateUser/{userId:guid}")]
         public async Task<IActionResult> UpdateUser(Guid id, UserDTO request)
         {
           
@@ -102,7 +102,7 @@ namespace PawnShopBE.Controllers
             }
         }
         [Authorize]
-        [HttpDelete("user/{id:guid}")]
+        [HttpDelete("deleteUser/{userId:guid}")]
         public async Task<IActionResult> DeleteUser(Guid userId)
         {
             var isUserCreated = await _userService.DeleteUser(userId);

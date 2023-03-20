@@ -8,7 +8,7 @@ using Services.Services.IServices;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v1/ramsom")]
     [ApiController]
     public class RansomController : ControllerBase
     {

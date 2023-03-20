@@ -11,7 +11,7 @@ namespace Services.Services.IServices
     {
         Task<bool> CreateInterestDiary(Contract contract);
         Task<IEnumerable<InterestDiary>> GetInteresDiary();
-        Task<InterestDiary> GetInteresDiaryByContractId(int contractId);
+        Task<IEnumerable<InterestDiary>> GetInteresDiariesByContractId(int contractId);
         Task<bool> UpdateInteresDiary(InterestDiary interestDiary);
         Task<bool> DeleteInteresDiary(int interestDiaryId);
     }

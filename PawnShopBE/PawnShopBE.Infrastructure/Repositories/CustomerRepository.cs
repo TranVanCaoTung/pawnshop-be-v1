@@ -22,11 +22,7 @@ namespace PawnShopBE.Infrastructure.Repositories
         }
         public async Task<Customer> getCustomerByCCCD(string cccd)
         {
-
-            //var customer = from c in _dbContext.Customer.Where(c => c.CCCD == cccd)
-            //               select c;
             var customer = _dbContext.Customer.SingleOrDefault(c => c.CCCD == cccd);
-
             return (Customer) customer;
         }
     }

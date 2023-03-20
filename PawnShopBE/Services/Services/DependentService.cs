@@ -1,4 +1,6 @@
-﻿using PawnShopBE.Core.Interfaces;
+﻿using PawnShopBE.Core.Display;
+using PawnShopBE.Core.DTOs;
+using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
 using Services.Services.IServices;
 using System;
@@ -14,9 +16,11 @@ namespace Services.Services
     {
         private readonly IUnitOfWork _unit;
         public readonly DependentPeople dependentPeople;
-        public DependentService(IUnitOfWork unitOfWork)
+        private readonly IServiceProvider _serviceProvider;
+        public DependentService(IUnitOfWork unitOfWork, IServiceProvider serviceProvider)
         {
             _unit = unitOfWork;
+            _serviceProvider = serviceProvider;
         }
         public async Task<bool> CreateDependent(DependentPeople dependent)
         {
@@ -26,7 +30,10 @@ namespace Services.Services
                 var result = _unit.Save();
                 if (result > 0)
                 {
-                    return true;
+                    if (await plusPoint(dependent))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -78,5 +85,20 @@ namespace Services.Services
             }
             return false;
         }
+        private async Task<bool> plusPoint(DependentPeople dependents)
+        {
+            var provider = _serviceProvider.GetService(typeof(ICustomerService)) as ICustomerService;
+            var customerList = await provider.GetAllCustomer(0);
+            var customerIenumerable = from c in customerList where c.CustomerId == dependents.CustomerId select c;
+            var customer = new Customer();
+            customer = customerIenumerable.FirstOrDefault();
+            //plus point
+            customer.Point += 25;
+            if (await provider.UpdateCustomer(customer))
+                return true;
+            else
+                return false;
+        }
+
     }
 }

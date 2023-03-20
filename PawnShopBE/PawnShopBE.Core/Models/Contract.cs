@@ -26,6 +26,7 @@ namespace PawnShopBE.Core.Models
         public decimal StorageFee { get; set; } = 0;
         public decimal TotalProfit { get; set; }
         public string? ContractVerifyImg { get; set; }
+        public string? CustomerVerifyImg { get; set; }
         public DateTime? UpdateDate { get; set; }
         public string? Description { get; set; }
         public int Status { get; set; }

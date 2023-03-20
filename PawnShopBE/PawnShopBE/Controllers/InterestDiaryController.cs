@@ -6,7 +6,7 @@ using Services.Services.IServices;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v1/interestDiary")]
     [ApiController]
     public class InterestDiaryController : ControllerBase
     {
@@ -19,29 +19,18 @@ namespace PawnShopBE.Controllers
             _mapper=mapper;
         }
 
-        //[HttpGet("interestDiary{contractId}")]
-        //public async Task<IActionResult> GetAllinterestDiary(int contractId) {
-        //    var respone =await _interestDiaryService.GetInteresDiaryByContractId(contractId);
-        //    if (respone != null)
-        //    {
-        //        return Ok(respone);
-        //    }
-        //    return BadRequest();
-        //}
+        [HttpGet("getInterestDiariesByContractId{contractId}")]
+        public async Task<IActionResult> GetInterestDiariesByContractId(int contractId)
+        {
+            var respone = await _interestDiaryService.GetInteresDiariesByContractId(contractId);
+            if (respone != null)
+            {
+                return Ok(respone);
+            }
+            return BadRequest();
+        }
 
-        //[HttpPost("interestDiary")]
-        //public async Task<IActionResult> CreateinterestDiary(InterestDiaryDTO diary)
-        //{
-        //    var diaryMapper = _mapper.Map<InterestDiary>(diary);
-        //    var respone = await _interestDiaryService.CreateInteresDiary(diaryMapper);
-        //    if (respone != null)
-        //    {
-        //        return Ok(respone);
-        //    }
-        //    return BadRequest();
-        //}
-
-        [HttpDelete("interestDiary/{id}")]
+        [HttpDelete("deleteInterestDiary/{id}")]
         public async Task<IActionResult> DeleteInterestDiary(int id)
         {
             var respone = await _interestDiaryService.DeleteInteresDiary(id);
@@ -52,7 +41,7 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("interestDiary/{id}")]
+        [HttpPut("updateInterestDiary/{id}")]
         public async Task<IActionResult> UpdateInterestDiary(int id, InterestDiaryDTO diary)
         {
             var diaryUpdate=_mapper.Map<InterestDiary>(diary);

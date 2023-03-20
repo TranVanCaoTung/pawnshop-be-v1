@@ -94,11 +94,11 @@ namespace Services.Services
             return result;
         }
 
-        public async Task<InterestDiary> GetInteresDiaryByContractId(int contractId)
+        public async Task<IEnumerable<InterestDiary>> GetInteresDiariesByContractId(int contractId)
         {
             if (contractId != null)
             {
-                return (InterestDiary) await _interestDiaryRepository.GetDiaryByContractId(contractId);              
+                return (List<InterestDiary>) await _interestDiaryRepository.GetDiaryByContractId(contractId);              
             }
             return null;
         }

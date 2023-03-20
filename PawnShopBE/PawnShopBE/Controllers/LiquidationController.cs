@@ -7,7 +7,7 @@ using Services.Services.IServices;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v1/liquidation")]
     [ApiController]
     public class LiquidationController : ControllerBase
     {
@@ -20,7 +20,7 @@ namespace PawnShopBE.Controllers
             _mapper=mapper;
         }
 
-        [HttpGet("liquidation")]
+        [HttpGet("getAll")]
         public async Task<IActionResult> GetAllLiquidation() {
             var respone =await _liquidationService.GetLiquidation();
             if (respone != null)
@@ -29,9 +29,9 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        private Validation<LiquidationDTO> _validation;
+        private Validation<LiquidationDTO> _validation=new Validation<LiquidationDTO>();
         
-    [HttpPost("liquidation")]
+    [HttpPost("createLiquidation")]
         public async Task<IActionResult> CreateLiquidation(LiquidationDTO liquidation)
         {
             //Check Validation
@@ -49,7 +49,7 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpDelete("liquidation/{id}")]
+        [HttpDelete("deleteLiquidation/{id}")]
         public async Task<IActionResult> DeleteLiquidation(int id)
         {
             var respone = await _liquidationService.DeleteLiquidation(id);
@@ -60,7 +60,7 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("liquidation/{id}")]
+        [HttpPut("updateLiquidation/{id}")]
         public async Task<IActionResult> UpdateLiquidation(int id,LiquidationDTO liquidation)
         {
             var liquidationUpdate=_mapper.Map<Liquidtation>(liquidation);

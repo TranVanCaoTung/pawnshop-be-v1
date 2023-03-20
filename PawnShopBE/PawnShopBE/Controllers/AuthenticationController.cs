@@ -42,9 +42,9 @@ namespace PawnShopBE.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Validate(Login login)
         {
-            var user= _context.User.SingleOrDefault(p => p.UserName == login.userName &&
-            p.Password== login.password && p.RoleId==(int)RoleConst.ADMIN);
-            if(user == null)
+            var admin= _context.Admin.SingleOrDefault(p => p.UserName == login.userName &&
+            p.Password== login.password);
+            if(admin == null)
             {
                 return BadRequest(new
                 {
@@ -52,7 +52,7 @@ namespace PawnShopBE.Controllers
                 });
             }
             // cấp token
-            var token = await _authen.GenerateToken(user);
+            var token = await _authen.GenerateToken(admin);
             if (token != null)
             {
                 return Ok(token);

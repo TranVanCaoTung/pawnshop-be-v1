@@ -11,7 +11,7 @@ using Attribute = PawnShopBE.Core.Models.Attribute;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v1/pawnableProduct")]
     [ApiController]
     public class PawnableProductController : ControllerBase
     {
@@ -28,8 +28,8 @@ namespace PawnShopBE.Controllers
             _mapper = mapper;
         }
         
-        [HttpGet("pawnable/{numPage}")]
-        public async Task<IActionResult> GetAllPawnable(int numPage)
+        [HttpGet("getAll/{numPage}")]
+        public async Task<IActionResult> GetAllPawnableProducts(int numPage)
         {
             var respone = await _pawnableProductService.GetAllPawnableProducts(numPage);
             if (respone != null)
@@ -39,8 +39,8 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPost("pawnable")]
-        public async Task<IActionResult> CreatePawnable(PawnableDTO pawnableDTO)
+        [HttpPost("createPawnable")]
+        public async Task<IActionResult> CreatePawnableProduct(PawnableDTO pawnableDTO)
         {
             var attribute = _mapper.Map<ICollection<Attribute>>(pawnableDTO.AttributeDTOs);
             var pawnable = _mapper.Map<PawnableProduct>(pawnableDTO);
@@ -54,7 +54,7 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("pawnable/{id}")]
+        [HttpPut("updatePawnableProduct/{id}")]
         public async Task<IActionResult> UpdatePawnableProduct(int id, PawnableDTO request)
         {
                      

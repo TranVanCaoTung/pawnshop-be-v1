@@ -7,7 +7,7 @@ using Services.Services.IServices;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/v1")]
+    [Route("api/v1/kyc")]
     [ApiController]
     public class KycController : ControllerBase
     {
@@ -20,7 +20,7 @@ namespace PawnShopBE.Controllers
             _mapper=mapper;
         }
 
-        [HttpGet("kyc")]
+        [HttpGet("getAll")]
         public async Task<IActionResult> GetAll() {
         var listKyc=await _kycService.GetAllKyc();
             if (listKyc == null)
@@ -28,7 +28,7 @@ namespace PawnShopBE.Controllers
             return Ok(listKyc);
         }
 
-        [HttpPost("kyc")]
+        [HttpPost("createKyc")]
         public async Task<IActionResult> CreateKyc(KycDTO kyc)
         {
             if (kyc != null)

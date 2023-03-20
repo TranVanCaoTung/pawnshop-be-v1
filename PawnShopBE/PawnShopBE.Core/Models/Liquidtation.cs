@@ -10,9 +10,9 @@ namespace PawnShopBE.Core.Models
     {
         public int LiquidationId { get; set; }
         public int ContractId { get; set; }
-        public int LiquidationMoney { get; set; }
-        public int liquidationDate { get; set; }
-        public int Description { get; set; }
+        public decimal LiquidationMoney { get; set; }
+        public DateTime liquidationDate { get; set; }
+        public string Description { get; set; }
 
 
         public virtual Contract? Contract { get; set; }

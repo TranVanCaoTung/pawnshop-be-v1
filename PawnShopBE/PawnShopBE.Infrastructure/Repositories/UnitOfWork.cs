@@ -95,7 +95,6 @@ namespace PawnShopBE.Infrastructure.Repositories
         {
             return _dbContext.SaveChanges();
         }
-
         public Task<int> SaveList()
         {
             return _dbContext.SaveChangesAsync();

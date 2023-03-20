@@ -25,13 +25,19 @@ namespace Services.Services
         private readonly ICustomerRelativeService _relative;
         private readonly IDependentService _dependent;
 
+
+        public CustomerService(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
+
         public CustomerService(IUnitOfWork unitOfWork, IKycService kycService, ICustomerRepository customerRepository, IContractService contract,
            IBranchService branch, IJobService job, ICustomerRelativeService relativeService,
            IDependentService dependent)
         {
             _unitOfWork = unitOfWork;
-            _kycService= kycService;
-            _customerRepository= customerRepository;
+            _kycService = kycService;
+            _customerRepository = customerRepository;
             _branch = branch;
             _contract = contract;
             _job = job;
@@ -39,9 +45,11 @@ namespace Services.Services
             _dependent = dependent;
         }
 
-        public async Task<CustomerDTO> getRelative(Guid idCus)
+        public async Task<Relative_Job_DependentDTO> getRelative(Guid idCus)
         {
             var listCustomer = await GetAllCustomer(0);
+            var customerIenumerable=from c in listCustomer where c.CustomerId== idCus select c;
+            var customer= customerIenumerable.FirstOrDefault();
             //get Job
             var listJob =await _job.GetJob();
             var Job = from b in listJob where b.CustomerId==idCus select b;
@@ -55,7 +63,8 @@ namespace Services.Services
             var dependent= from d in listDependent where d.CustomerId==idCus select d;
 
             //trien khai CustomerDTO
-            var customerDTOs = new CustomerDTO();
+            var customerDTOs = new Relative_Job_DependentDTO();
+            customerDTOs = getFiledCustomerDTO(customer, customerDTOs);
             try
             {
                 customerDTOs.Jobs= new List<JobDTO>();
@@ -68,10 +77,23 @@ namespace Services.Services
             {
                 Console.WriteLine(ex.Message);
             }
-            return null;
+            return customerDTOs;
         }
 
-        private CustomerDTO getListRelativeDTO(Guid idCus,CustomerDTO customerDTOs, IEnumerable<Job> job, 
+        private Relative_Job_DependentDTO getFiledCustomerDTO(Customer? customer, Relative_Job_DependentDTO customerDTOs)
+        {
+            customerDTOs.KycId = customer.KycId;
+            customerDTOs.FullName=customer.FullName;
+            customerDTOs.CCCD=customer.CCCD;
+            customerDTOs.Address=customer.Address;
+            customerDTOs.Phone=customer.Phone;
+            customerDTOs.Status=customer.Status;
+            customerDTOs.Point=customer.Point;
+            customerDTOs.CreatedDate=customer.CreatedDate;
+            return customerDTOs;
+        }
+
+        private Relative_Job_DependentDTO getListRelativeDTO(Guid idCus,Relative_Job_DependentDTO customerDTOs, IEnumerable<Job> job, 
             IEnumerable<CustomerRelativeRelationship> relative, IEnumerable<DependentPeople> dependent)
         {
             foreach (var y in job)
@@ -110,7 +132,7 @@ namespace Services.Services
             return customerDTOs;
         }
 
-        public async Task<bool> createRelative(Guid idCus,CustomerDTO customer)
+        public async Task<bool> createRelative(Guid idCus,Relative_Job_DependentDTO customer)
         {
             var job = new Job();
             var relative = new CustomerRelativeRelationship();
@@ -130,19 +152,23 @@ namespace Services.Services
                 dependent=getFieldDependent(customer,dependent);
                
                 //create relative
-                var createRelative = _relative.CreateCustomerRelative(relative);
-                var createJob = _job.CreateJob(job);
-                var createDependent = _dependent.CreateDependent(dependent);
+                var createRelative =await _relative.CreateCustomerRelative(relative);
+                var createJob =await _job.CreateJob(job);
+                var createDependent = await _dependent.CreateDependent(dependent);
+                if(createRelative || createJob || createDependent) 
+                    return true;
+                else
+                    return false;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
             }
-            return true;
+            
         }
 
-        private DependentPeople getFieldDependent(CustomerDTO customer, DependentPeople dependent)
+        private DependentPeople getFieldDependent(Relative_Job_DependentDTO customer, DependentPeople dependent)
         {
             foreach (var x in customer.DependentPeople)
             {
@@ -155,7 +181,7 @@ namespace Services.Services
             return dependent;
         }
 
-        private CustomerRelativeRelationship getFieldRelative(CustomerDTO customer, CustomerRelativeRelationship relative)
+        private CustomerRelativeRelationship getFieldRelative(Relative_Job_DependentDTO customer, CustomerRelativeRelationship relative)
         {
             foreach (var x in customer.CustomerRelativeRelationships)
             {
@@ -168,7 +194,7 @@ namespace Services.Services
             return relative;
         }
 
-        private Job getFieldJob(CustomerDTO customer, Job job)
+        private Job getFieldJob(Relative_Job_DependentDTO customer, Job job)
         {
             foreach (var x in customer.Jobs)
             {
@@ -183,22 +209,35 @@ namespace Services.Services
 
         public async Task<bool> CreateCustomer(Customer customer)
         {
-            var oldCus = GetCustomerById(customer.CustomerId);
-            // Check if new customer
-            if (oldCus == null)
-            {       
-                customer.Kyc = null;
-                customer.DependentPeople = null;
-                customer.Jobs = null;
-                customer.CustomerRelativeRelationships = null;
-                customer.Status = (int)CustomerConst.ACTIVE;
-                customer.Point = 0;
-                customer.CreatedDate = DateTime.Now;
-                await _unitOfWork.Customers.Add(customer);
+            if (customer != null)
+            {
+                 await _unitOfWork.Customers.Add(customer);
+                var result = _unitOfWork.Save();
+                if (result > 0) return true;
             }
             return false;
-           
         }
+
+        public async Task<int> createKyc(CustomerDTO customer)
+        {
+            //get list Kyc
+            var kyc= new Kyc();
+            kyc.IdentityCardBacking = customer.IdentityCardBacking;
+            kyc.IdentityCardFronting = customer.IdentityCardFronting;
+            kyc.FaceImg= customer.FaceImg;
+            //create kyc
+            await _unitOfWork.Kycs.Add(kyc);
+             _unitOfWork.Save();
+            //get kycId
+            var listKyc= await _unitOfWork.Kycs.GetAll();
+            var kycLast = listKyc.LastOrDefault();
+            if (kycLast != null)
+            {
+                return kycLast.KycId;
+            }
+            return 0;
+        }
+
         public async Task<IEnumerable<Customer>> GetAllCustomer(int num)
         {
             var listCustomer = await _unitOfWork.Customers.GetAll();
