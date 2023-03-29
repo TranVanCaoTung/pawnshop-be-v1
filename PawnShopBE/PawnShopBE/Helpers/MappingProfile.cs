@@ -108,7 +108,7 @@ namespace PawnShopBE.Helpers
                 opt => opt.MapFrom(src => src.TotalProfit))
                  .ForMember(
                 dest => dest.InterestRecommend,
-                opt => opt.MapFrom(src => src.InterestRecommend));
+                opt => opt.MapFrom(src => src.InterestRecommend));      
             #endregion Contract
 
             #region Branch

@@ -39,6 +39,17 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
+        [HttpGet("getPawnAbleProductById/{id}")]
+        public async Task<IActionResult> PawnAbleProductById(int id)
+        {
+            var respone = await _pawnableProductService.GetPawnableProductById(id);
+            if (respone != null)
+            {
+                return Ok(respone);
+            }
+            return BadRequest();
+        }
+
         [HttpPost("createPawnable")]
         public async Task<IActionResult> CreatePawnableProduct(PawnableDTO pawnableDTO)
         {
@@ -54,19 +65,16 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updatePawnableProduct/{id}")]
-        public async Task<IActionResult> UpdatePawnableProduct(int id, PawnableDTO request)
-        {
-                     
+        [HttpPut("updatePawnableProduct/{pawnableProductId}")]
+        public async Task<IActionResult> UpdatePawnableProduct(int pawnableProductId,  PawnableDTO request)
+        {                
                 var pawnableProduct = _mapper.Map<PawnableProduct>(request);
-                pawnableProduct.PawnableProductId = id;
-
+                pawnableProduct.PawnableProductId = pawnableProductId;
                 var response = await _pawnableProductService.UpdatePawnableProduct(pawnableProduct);
                 if (response)
                 {
                     return Ok(response);
-                }
-            
+                }           
             return BadRequest();
         }
 

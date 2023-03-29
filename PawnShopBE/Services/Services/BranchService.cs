@@ -18,69 +18,88 @@ namespace Services.Services
         public IUnitOfWork _unitOfWork;
         private IContractService _contract;
         private IInteresDiaryService _diary;
-        private ILedgerService _ledger;
+        private ILedgerService _ledgerService;
 
         public BranchService(IUnitOfWork unitOfWork, IContractService contract
            , ILedgerService ledger, IInteresDiaryService diary)
         {
             _unitOfWork = unitOfWork;
             _contract = contract;
-            _ledger = ledger;
+            _ledgerService = ledger;
             _diary = diary;
         }
         public async Task<DisplayBranchDetail> getDisplayBranchDetail(DisplayBranchDetail branchDetail)
         {
-            //get list Ledger
-            var _ledgerList = await _ledger.GetLedger();
-            //get list contract
+            //get all list
+            var _ledgerList = await _ledgerService.GetLedger();
             var _contractList = await _contract.GetAllContracts(0);
-            //get list Diary
             var _diaryList = await _diary.GetInteresDiary();
             //get branch id
             var branchID = branchDetail.branchId;
-
             //get ledger have branchID
             var ledger = from l in _ledgerList where l.BranchId == branchID select l;
-            //get contract have branchID
             var contract = from c in _contractList where c.BranchId == branchID select c;
-
             //get contract id
             var contractId = getContractId(contract);
-
             //get diary have contractId
             var diary = from d in _diaryList where d.ContractId == contractId select d;
 
-            //get Branch Detail
             foreach (var x in ledger)
             {
-                branchDetail.recveivedInterest = x.RecveivedInterest;
-                branchDetail.loanBranch = x.Loan;
-                branchDetail.balance = x.Balance;
+                //lãi đã thu
+                branchDetail.recveivedInterest += x.RecveivedInterest;
+                //tiền cho vay
+                branchDetail.loanLedger += x.Loan;
+                //quỹ tiền mặt   
+                branchDetail.balance += x.Balance;
             }
+
             foreach (var x in contract)
             {
-                branchDetail.loanContract = x.Loan;
-                branchDetail.expectProfit= x.TotalProfit;
-                branchDetail.contractCode = x.ContractCode;
-                branchDetail.statusContract = x.Status;
+                //tiền đang cho vay
+                branchDetail.loanContract += x.Loan;
+                //lãi dự kiến
+                branchDetail.totalProfit += x.TotalProfit;
             }
-            // nợ khách cần trả
+            //số hợp đồng
+            branchDetail.numberContract = _contractList.Count();
+            //số họp đồng mở
+            branchDetail.openContract = getNumOpenCloseContract(1, _contractList);
+            //số hợp đồng đóng
+            branchDetail.closeContract = getNumOpenCloseContract(4, _contractList);
+
             foreach (var x in diary)
             {
-                branchDetail.debtCustomers = x.TotalPay - x.PaidMoney;
+                //tiền khách nợ
+                branchDetail.debtCustomers += x.TotalPay - x.PaidMoney;
             }
             return branchDetail;
         }
+
+        private int getNumOpenCloseContract(int status, IEnumerable<Contract> contractList)
+        {
+            switch (status)
+            {
+                case 1:
+                    var listOpen = from c in contractList where c.Status == status select c;
+                    var open = listOpen.Count();
+                    return open;
+                case 4:
+                    var listClose = from c in contractList where c.Status == status select c;
+                    var close = listClose.Count();
+                    return close;
+            }
+            return 0;
+        }
         private int getContractId(IEnumerable<Contract> contract)
         {
-            var getContractId = from c in contract select c.ContractId;
-            var contractId = getContractId.First();
+            var contractId = (from c in contract select c.ContractId).FirstOrDefault();
             return contractId;
         }
         public async Task<IEnumerable<DisplayBranch>> getDisplayBranch(IEnumerable<DisplayBranch> branchList)
         {
             //get list Ledger
-            var _ledgerList = await _ledger.GetLedger();
+            var _ledgerList = await _ledgerService.GetLedger();
             foreach (var branch in branchList)
             {
                 var branchId = branch.branchId;

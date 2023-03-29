@@ -60,11 +60,10 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updateJob/{id}")]
-        public async Task<IActionResult> UpdateJob(int id,JobDTO job)
+        [HttpPut("updateJob")]
+        public async Task<IActionResult> UpdateJob(JobDTO job)
         {
             var jobUpdate=_mapper.Map<Job>(job);
-            jobUpdate.JobId = id;
             var respone = await _jobService.UpdateJob(jobUpdate);
             if (respone != null)
             {

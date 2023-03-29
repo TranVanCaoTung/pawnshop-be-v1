@@ -17,11 +17,14 @@ namespace Services.Services.IServices
         Task<ICollection<DisplayContractList>> GetAllDisplayContracts(int num);
         Task<IEnumerable<Contract>> GetAllContracts();
         Task<Contract> GetContractById(int contractId);
+        Task<Contract> GetContractByContractCode(string contractCode);
         Task<DisplayContractDetail> GetContractDetail(int contractId);
-        Task<bool> UpdateContract(string contractCode, Contract contract);
+        Task<bool> UpdateContract(int contractId, Contract contract);
         Task<bool> DeleteContract(int contractId);
         Task<bool> UploadContractImg(int contractId, string customerImg, string contractImg);
+        Task exporteExcel();
+        Task<DisplayContractHomePage> getAllContractHomepage(int branchId);
         Task<bool> CreateContractExpiration(int contractId);
-
+        Task<DisplayContractInfo> GetContractInfoByContractId(int contractId);
     }
 }

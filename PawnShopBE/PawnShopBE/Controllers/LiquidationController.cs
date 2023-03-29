@@ -60,11 +60,10 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updateLiquidation/{id}")]
-        public async Task<IActionResult> UpdateLiquidation(int id,LiquidationDTO liquidation)
+        [HttpPut("updateLiquidation")]
+        public async Task<IActionResult> UpdateLiquidation(LiquidationDTO liquidation)
         {
             var liquidationUpdate=_mapper.Map<Liquidtation>(liquidation);
-            liquidationUpdate.LiquidationId= id;
             var respone = await _liquidationService.UpdateLiquidation(liquidationUpdate);
             if (respone != null)
             {

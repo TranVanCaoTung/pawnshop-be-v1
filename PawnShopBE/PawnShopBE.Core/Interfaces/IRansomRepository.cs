@@ -9,5 +9,6 @@ namespace PawnShopBE.Core.Interfaces
 {
     public interface IRansomRepository : IGenericRepository<Ransom>
     {
+        public Task<Ransom> GetRanSomByContractId(int contractId);
     }
 }

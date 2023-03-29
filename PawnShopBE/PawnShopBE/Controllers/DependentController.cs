@@ -60,11 +60,10 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updateDependentPeople/{id}")]
-        public async Task<IActionResult> UpdateDependent(Guid id,DependentPeopleDTO dependent)
+        [HttpPut("updateDependentPeople")]
+        public async Task<IActionResult> UpdateDependent(DependentPeopleDTO dependent)
         {
             var dependentMapper=_mapper.Map<DependentPeople>(dependent);
-            dependentMapper.DependentPeopleId = id;
             var respone = await _dependentService.UpdateDependent(dependentMapper);
             if (respone != null)
             {

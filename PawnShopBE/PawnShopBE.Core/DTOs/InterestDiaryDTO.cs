@@ -10,6 +10,7 @@ namespace PawnShopBE.Core.DTOs
    public class InterestDiaryDTO
     {
         public int ContractId { get; set; }
+        public int? InterestDiaryId { get; set; }
 
         [Range(1000, 10000000000, ErrorMessage = "Tiền nhập phải từ 1000 - 100Tr")]
         public decimal Payment { get; set; }

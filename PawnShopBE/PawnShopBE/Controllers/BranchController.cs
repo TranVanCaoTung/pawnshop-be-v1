@@ -47,6 +47,7 @@ namespace PawnShopBE.Controllers
             }
         }
         [HttpGet("getDetailById/{id}")]
+
         public async Task<IActionResult> GetBranchDetail(int id)
         {
             var branchList = await _branchService.GetBranchById(id);

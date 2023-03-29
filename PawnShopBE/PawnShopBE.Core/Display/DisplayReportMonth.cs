@@ -8,6 +8,7 @@ namespace PawnShopBE.Core.Display
 {
     public class DisplayReportMonth
     {
+        public string branchName { get; set; }
         public int month { get; set; }
         public decimal fund { get; set; }
         public decimal loan { get; set; }

@@ -9,6 +9,7 @@ namespace PawnShopBE.Core.DTOs
 {
     public class ContractAssetDTO
     {
+        public int ContractAssetId { get; set; }
         public int? WarehouseId { get; set; }
         public int PawnableProductId { get; set; }
 
@@ -21,6 +22,7 @@ namespace PawnShopBE.Core.DTOs
         [Required(ErrorMessage = "Cần có hình ảnh xác thực")]
         public string Image { get; set; }
         public string? commodifyCode { get; set; }
+        public int Status { get; set; }
 
     }
 }

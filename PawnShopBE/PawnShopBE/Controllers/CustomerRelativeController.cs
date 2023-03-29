@@ -60,11 +60,10 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updateCustomerRelative/{id}")]
-        public async Task<IActionResult> UpdateCustomerRelative(Guid id,CustomerRelativeDTO customerRelative)
+        [HttpPut("updateCustomerRelative")]
+        public async Task<IActionResult> UpdateCustomerRelative(CustomerRelativeDTO customerRelative)
         {
             var customerRelativeMapper = _mapper.Map<CustomerRelativeRelationship>(customerRelative);
-            customerRelativeMapper.CustomerRelativeRelationshipId = id;
             var respone = await _customerRelative.UpdateCustomerRelative(customerRelativeMapper);
             if (respone != null)
             {

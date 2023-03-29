@@ -16,6 +16,7 @@ namespace PawnShopBE.Core.Display
         public decimal recveivedInterest { get; set; }
         public string Address { get; set; }
         public string PhoneNumber { get; set; }
+        public DateTime CreateDate { get; set; }
         public int Status { get; set; }
     }
 }

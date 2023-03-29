@@ -19,6 +19,5 @@ namespace PawnShopBE.Core.Models
         public bool IsRevoked { get; set; }
         public DateTime IssuedAt { get; set; }
         public DateTime ExpiredAt { get; set; }
-
     }
 }

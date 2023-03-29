@@ -8,10 +8,13 @@ using PawnShopBE.Infrastructure.Repositories;
 using Services.Services.IServices;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Contract = PawnShopBE.Core.Models.Contract;
 
 namespace Services.Services
 {
@@ -21,18 +24,38 @@ namespace Services.Services
         private readonly InterestDiary _diary;
         private DbContextClass _dbContextClass;
         private readonly IInterestDiaryRepository _interestDiaryRepository;
-        public InterestDiaryService(IUnitOfWork unitOfWork, DbContextClass dbContextClass, IInterestDiaryRepository interestDiaryRepository )
+        private readonly ILogContractService _logContractService;
+        public InterestDiaryService(IUnitOfWork unitOfWork, DbContextClass dbContextClass, IInterestDiaryRepository interestDiaryRepository, ILogContractService logContractService)
         {
             _unit = unitOfWork;
             _dbContextClass = dbContextClass;
             _interestDiaryRepository = interestDiaryRepository;
-
+            _logContractService = logContractService;
         }
+
+        private string GetCustomerName(Guid customerId)
+        {
+            var customerIenumerable = from c in _dbContextClass.Customer
+                                      where c.CustomerId == customerId
+                                      select c;
+            var customer = customerIenumerable.FirstOrDefault();
+            return customer.FullName;
+        }
+
+        private string GetUser(Guid userId)
+        {
+            var userIenumerable = from u in _dbContextClass.User
+                                  where u.UserId == userId
+                                  select u;
+            var user = userIenumerable.FirstOrDefault();
+            return user.FullName;
+        }
+
         public async Task<bool> CreateInterestDiary(Contract contract)
         {
             if (contract != null)
             {
-                int numberOfPeriods = contract.Package.Day/ contract.Package.PaymentPeriod;
+                int numberOfPeriods = contract.Package.Day / contract.Package.PaymentPeriod;
                 DateTime startDate = contract.ContractStartDate;
                 DateTime endDate = contract.ContractEndDate;
                 List<Tuple<DateTime, DateTime>> periods = HelperFuncs.DivideTimePeriodIntoPeriods(startDate, endDate, numberOfPeriods);
@@ -58,10 +81,11 @@ namespace Services.Services
                     interestDiary.PaidMoney = 0;
                     interestDiary.InterestDebt = 0;
                     _dbContextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary ON;");
-                        interestDiaries.Add(interestDiary);        
-                        await _unit.InterestDiaries.AddList(interestDiaries);
-                        _dbContextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary OFF;");
-                    }
+                    interestDiaries.Add(interestDiary);
+                    await _unit.InterestDiaries.AddList(interestDiaries);
+                    _dbContextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary OFF;");
+
+                }
                 result = await _unit.SaveList();
 
                 if (result > 0)
@@ -96,38 +120,101 @@ namespace Services.Services
 
         public async Task<IEnumerable<InterestDiary>> GetInteresDiariesByContractId(int contractId)
         {
-            if (contractId != null)
+            try
             {
-                return (List<InterestDiary>) await _interestDiaryRepository.GetDiaryByContractId(contractId);              
+                return (contractId != null) ? (List<InterestDiary>)await _interestDiaryRepository.GetDiaryByContractId(contractId) : null;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
             }
             return null;
         }
 
-        public async Task<bool> UpdateInteresDiary(InterestDiary interestDiary)
+        public async Task<bool> UpdateInterestDiary(int id, decimal paidMoney)
         {
-            var diaryUpdate = _unit.InterestDiaries.SingleOrDefault
-                (interestDiary, j => j.InterestDiaryId == interestDiary.InterestDiaryId);
-            if (diaryUpdate != null)
+            try
             {
-                //diaryUpdate.TotalPay = diaryUpdate.Penalty + diaryUpdate.Payment;
-                diaryUpdate.PaidMoney = interestDiary.PaidMoney;
-                diaryUpdate.InterestDebt = diaryUpdate.TotalPay - interestDiary.PaidMoney;
+                var diaryUpdate = await _unit.InterestDiaries.GetById(id);
+                if (diaryUpdate == null) return false;
+                diaryUpdate.PaidMoney = paidMoney;
+                diaryUpdate.InterestDebt = diaryUpdate.TotalPay - (paidMoney);
                 diaryUpdate.PaidDate = DateTime.Now;
 
-                if (diaryUpdate.TotalPay == interestDiary.PaidMoney)
+                if (diaryUpdate.TotalPay == paidMoney && diaryUpdate.InterestDebt == 0)
                 {
-                    diaryUpdate.Status = (int) InterestDiaryConsts.PAID;
+                    diaryUpdate.Status = (int)InterestDiaryConsts.PAID;
+                    diaryUpdate.InterestDebt = 0;
                 }
-                diaryUpdate.Description = interestDiary.Description;
-                diaryUpdate.ProofImg = interestDiary.ProofImg;
+
+
                 _unit.InterestDiaries.Update(diaryUpdate);
+                
                 var result = _unit.Save();
                 if (result > 0)
                 {
+                    // Log Contract when onTime
+                    var contractJoinUserJoinCustomer = from contract in _dbContextClass.Contract
+                                                       join customer in _dbContextClass.Customer
+                                                       on contract.CustomerId equals customer.CustomerId
+                                                       join user in _dbContextClass.User
+                                                       on contract.UserId equals user.UserId
+                                                       select new
+                                                       {
+                                                           ContractId = contract.ContractId,
+                                                           UserName = user.FullName,
+                                                           CustomerName = customer.FullName,
+                                                       };
+                    var logContract = new LogContract();
+                    foreach (var row in contractJoinUserJoinCustomer)
+                    {
+                        logContract.ContractId = row.ContractId;
+                        logContract.UserName = row.UserName;
+                        logContract.CustomerName = row.CustomerName;
+                    }
+                    logContract.Debt = diaryUpdate.TotalPay;
+                    logContract.Paid = diaryUpdate.PaidMoney;
+                    logContract.Description = diaryUpdate.NextDueDate.ToString("MM/dd/yyyy HH:mm");
+                    logContract.EventType = (diaryUpdate.TotalPay == diaryUpdate.PaidMoney) ? (int)LogContractConst.INTEREST_PAID : (int)LogContractConst.INTEREST_NOT_PAID;
+                    logContract.LogTime = DateTime.Now;
+                    if (logContract.EventType == (int)LogContractConst.INTEREST_PAID)
+                    {
+                        await _logContractService.CreateLogContract(logContract);
+                    }
                     return true;
                 }
+              
+                
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+            return false;
+
+        }
+
+        public async Task<bool> UploadInterestDiaryImg(int interestDiaryId, string interestDiaryImg)
+        {
+            try
+            {
+                var interestDiary = await _unit.InterestDiaries.GetById(interestDiaryId);
+                if (interestDiary != null && (interestDiaryImg != null))
+                {
+                    interestDiary.ProofImg = interestDiaryImg;
+                }
+                _unit.InterestDiaries.Update(interestDiary);
+                var result = _unit.Save();
+
+                return (result > 0) ? true : false;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
             }
             return false;
         }
+
+        
     }
 }

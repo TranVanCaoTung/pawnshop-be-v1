@@ -26,8 +26,6 @@ namespace PawnShopBE.Core.Models
 
         //relationship
 
-
-
         public virtual Role Role { get; set; }
         public virtual Branch? Branch { get; set; }
         public ICollection<Contract> Contracts { get; set; }

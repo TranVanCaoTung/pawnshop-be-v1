@@ -10,6 +10,7 @@ namespace PawnShopBE.Core.DTOs
 {
     public class CustomerDTO
     {
+        public Guid CustomerId { get; set; }
         public int KycId { get; set; }
         [Required(ErrorMessage = "Tên khách hàng không được để trống")]
         [StringLength(50, MinimumLength = 6,

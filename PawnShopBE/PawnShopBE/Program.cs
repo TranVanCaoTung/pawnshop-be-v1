@@ -11,6 +11,7 @@ using PawnShopBE.Helpers;
 using System.Configuration;
 using Quartz;
 using PawnShopBE.Core.Data;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 //Add Authentication
@@ -82,8 +83,11 @@ builder.Services.AddScoped<IAttributeService, AttributeService>();
 builder.Services.AddScoped<IInteresDiaryService, InterestDiaryService>();
 builder.Services.AddScoped<IRansomService, RansomService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<ILogContractService, LogContractService>();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 builder.Services.AddHttpContextAccessor();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

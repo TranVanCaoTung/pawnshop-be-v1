@@ -60,11 +60,10 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updateLedger/{id}")]
-        public async Task<IActionResult> UpdateLedger(int id,LedgerDTO ledger)
+        [HttpPut("updateLedger")]
+        public async Task<IActionResult> UpdateLedger(LedgerDTO ledger)
         {
             var ledgerUpdate=_mapper.Map<Ledger>(ledger);
-            ledgerUpdate.LedgerId = id;
             var respone = await _ledgerService.UpdateLedger(ledgerUpdate);
             if (respone != null)
             {

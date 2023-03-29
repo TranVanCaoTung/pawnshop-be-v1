@@ -8,6 +8,7 @@ namespace PawnShopBE.Core.DTOs
 {
     public class LiquidationDTO
     {
+        public int LiquidationId { get; set; }
         public int ContractId { get; set; }
         public int LiquidationMoney { get; set; }
         public int liquidationDate { get; set; }

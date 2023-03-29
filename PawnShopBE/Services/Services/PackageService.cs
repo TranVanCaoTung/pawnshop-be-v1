@@ -28,15 +28,11 @@ namespace Services.Services
             return result;
         }
 
-        public async Task<Package> GetPackageById(int packageId, int interestRecommend)
+        public async Task<Package> GetPackageById(int packageId)
         {
             if (packageId != null)
             {
-                var package = await _unitOfWork.Packages.GetById(packageId);
-                if (interestRecommend != 0)
-                {
-                    package.PackageInterest = interestRecommend;
-                }
+                var package = await _unitOfWork.Packages.GetById(packageId);               
                 if (package != null)
                 {
                     return package;

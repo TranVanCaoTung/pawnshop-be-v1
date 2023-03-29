@@ -8,6 +8,7 @@ namespace PawnShopBE.Core.DTOs
 {
     public class KycDTO
     {
+        public int KycId { get; set; }
         public string IdentityCardFronting { get; set; }
         public string IdentityCardBacking { get; set; }
         public string FaceImg { get; set; }

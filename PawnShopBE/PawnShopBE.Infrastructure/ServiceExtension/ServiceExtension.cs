@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PawnShopBE.Core.Interfaces;
+using PawnShopBE.Core.Models;
 using PawnShopBE.Infrastructure.Helpers;
 using PawnShopBE.Infrastructure.Repositories;
 using System;
@@ -39,7 +40,9 @@ namespace PawnShopBE.Infrastructure.ServiceExtension
             services.AddScoped<IPawnableProductRepository, PawnableProductRepository>();
             services.AddScoped<IWarehouseRepository, WarehouseRepository>();
             services.AddScoped<IRansomRepository, RansomRepository>();
-                
+            services.AddScoped<IPermissionReporsitory,PermissionRepository>();
+            services.AddScoped<IUserPermissionGroupRepository, UserPerGroupRepository>();
+            services.AddScoped<ILogContractRepository, LogContractRepository>();
             return services;
         }
     }

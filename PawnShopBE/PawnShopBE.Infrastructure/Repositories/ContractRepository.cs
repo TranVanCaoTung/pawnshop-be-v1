@@ -14,10 +14,8 @@ namespace PawnShopBE.Infrastructure.Repositories
 {
     public class ContractRepository : GenericRepository<Contract>, IContractRepository
     {
-        private readonly DbContextClass _dbContextClass;
         public ContractRepository(DbContextClass dbContext) : base(dbContext)
         {
-            _dbContextClass = dbContext;
         }
 
         public async Task<List<DisplayContractList>> displayContractListTakePage(int number, List<DisplayContractList> list)

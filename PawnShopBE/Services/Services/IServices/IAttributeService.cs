@@ -11,6 +11,6 @@ namespace Services.Services.IServices
     public interface IAttributeService
     {
         Task<bool> CreateAttribute(List<Attribute> attributes);
-        Task<IEnumerable<Attribute>> GetAttributeByPawnableId(int pawnableProductId);
+        Task<IEnumerable<Attribute>> GetAttributesByPawnableId(int pawnableProductId);
     }
 }

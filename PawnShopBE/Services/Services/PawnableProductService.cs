@@ -7,6 +7,8 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Attribute = PawnShopBE.Core.Models.Attribute;
 
 namespace Services.Services
@@ -14,13 +16,15 @@ namespace Services.Services
     public class PawnableProductService : IPawnableProductService
     {
         public IUnitOfWork _unitOfWork;
-        private IAttributeService _attribute;
+        private IAttributeService _attributeService;
+        private IPawnableProductRepository _pawnsRepository;
        
 
-        public PawnableProductService(IUnitOfWork unitOfWork,IAttributeService attribute)
+        public PawnableProductService(IUnitOfWork unitOfWork,IAttributeService attribute, IPawnableProductRepository pawnableProductRepository)
         {
             _unitOfWork = unitOfWork;
-            _attribute = attribute;
+            _attributeService = attribute;
+            _pawnsRepository = pawnableProductRepository;
         }
 
         public async Task<bool> CreatePawnableProduct(PawnableProduct pawnableProduct)
@@ -46,9 +50,13 @@ namespace Services.Services
             return result;
         }
 
-        public Task<PawnableProduct> GetPawnableProductById(int pawnableProductId)
+        public async Task<PawnableProduct> GetPawnableProductById(int pawnableProductId)
         {
-            throw new NotImplementedException();
+
+            var result = await _unitOfWork.PawnableProduct.GetById(pawnableProductId);
+            var attributes = await  _pawnsRepository.GetAttributesByPawnableProductId(pawnableProductId);
+             
+            return result;
         }
 
         public async Task<bool> UpdatePawnableProduct(PawnableProduct pawnableProduct)

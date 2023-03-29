@@ -10,6 +10,7 @@ namespace PawnShopBE.Core.DTOs
    public class JobDTO
     {
         public Guid CustomerId { get; set; }
+        public int JobId { get; set; }
 
         [Required(ErrorMessage = "Tên công việc không được để trống")]
         [StringLength(50, MinimumLength = 6,

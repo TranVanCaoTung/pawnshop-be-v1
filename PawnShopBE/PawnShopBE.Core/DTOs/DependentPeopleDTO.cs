@@ -10,6 +10,7 @@ namespace PawnShopBE.Core.DTOs
     public class DependentPeopleDTO
     {
         public Guid CustomerId { get; set; }
+        public Guid DependentPeopleId { get; set; }
 
         [Required(ErrorMessage = "Tên người phụ thuộc không được để trống")]
         [StringLength(50, MinimumLength = 6,

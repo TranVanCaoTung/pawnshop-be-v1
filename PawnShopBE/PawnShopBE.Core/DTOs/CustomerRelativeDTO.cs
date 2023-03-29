@@ -10,6 +10,7 @@ namespace PawnShopBE.Core.DTOs
    public class CustomerRelativeDTO
     {
         public Guid CustomerId { get; set; }
+        public Guid CustomerRelativeRelationshipId { get; set; }
 
         public string RelativeRelationship { get; set; }
 

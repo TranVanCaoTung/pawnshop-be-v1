@@ -10,6 +10,6 @@ namespace Services.Services.IServices
     public interface IPackageService
     {
         Task<IEnumerable<Package>> GetAllPackages(int num);
-        Task<Package> GetPackageById(int packageId, int interestRecommend);
+        Task<Package> GetPackageById(int packageId);
     }
 }

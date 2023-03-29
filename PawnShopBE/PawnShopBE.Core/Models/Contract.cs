@@ -41,9 +41,12 @@ namespace PawnShopBE.Core.Models
         public virtual User? User { get; set; }
 
         public ICollection<InterestDiary>? InterestDiaries { get; set; }
+        public ICollection<LogContract>? LogContracts { get; set; }
+
         public Contract()
         {
             InterestDiaries = new List<InterestDiary>();
+            LogContracts = new List<LogContract>();
         }
     }
 }

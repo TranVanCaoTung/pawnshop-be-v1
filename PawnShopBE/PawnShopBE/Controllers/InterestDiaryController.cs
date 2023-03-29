@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
+using Services.Services;
 using Services.Services.IServices;
 
 namespace PawnShopBE.Controllers
@@ -30,10 +31,21 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpDelete("deleteInterestDiary/{id}")]
-        public async Task<IActionResult> DeleteInterestDiary(int id)
+        //[HttpDelete("deleteInterestDiary/{id}")]
+        //public async Task<IActionResult> DeleteInterestDiary(int id)
+        //{
+        //    var respone = await _interestDiaryService.DeleteInteresDiary(id);
+        //    if (respone != null)
+        //    {
+        //        return Ok(respone);
+        //    }
+        //    return BadRequest();
+        //}
+
+        [HttpPut("updateInterestDiary/{id}")]
+        public async Task<IActionResult> UpdateInterestDiary(int id, decimal paidMoney)
         {
-            var respone = await _interestDiaryService.DeleteInteresDiary(id);
+            var respone = await _interestDiaryService.UpdateInterestDiary(id, paidMoney);
             if (respone != null)
             {
                 return Ok(respone);
@@ -41,17 +53,14 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updateInterestDiary/{id}")]
-        public async Task<IActionResult> UpdateInterestDiary(int id, InterestDiaryDTO diary)
+        [HttpPut("uploadInterestImg/{id}")]
+        public async Task<IActionResult> UploadInterestImg(int id, string interestImg)
         {
-            var diaryUpdate=_mapper.Map<InterestDiary>(diary);
-            diaryUpdate.InterestDiaryId = id;
-            var respone = await _interestDiaryService.UpdateInteresDiary(diaryUpdate);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            var uploadInterest = await _interestDiaryService.UploadInterestDiaryImg(id, interestImg);
+            if (uploadInterest)
+                return Ok(uploadInterest);
+            else
+                return BadRequest(uploadInterest);
         }
     }
 }

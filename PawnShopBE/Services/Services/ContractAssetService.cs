@@ -1,6 +1,7 @@
 ﻿using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Infrastructure.Helpers;
 using Services.Services.IServices;
 using System;
 using System.Collections.Generic;
@@ -16,10 +17,12 @@ namespace Services.Services
     {
         public IUnitOfWork _unitOfWork;
         private readonly ContractAsset contractAsset;
+        private readonly IContractAssetRepository _contractAssetRepository;
 
-        public ContractAssetService(IUnitOfWork unitOfWork)
+        public ContractAssetService(IUnitOfWork unitOfWork, IContractAssetRepository contractAssetRepository)
         {
             _unitOfWork = unitOfWork;
+            _contractAssetRepository = contractAssetRepository;
         }
         public async Task<bool> CreateContractAsset(ContractAsset contractAsset)
         {
@@ -71,12 +74,7 @@ namespace Services.Services
                 (contractAsset, j => j.ContractAssetId == contractAsset.ContractAssetId);
             if (contractAssetUpdate != null)
             {
-                contractAssetUpdate.ContractAssetName = contractAsset.ContractAssetName;
                 contractAssetUpdate.WarehouseId = contractAsset.WarehouseId;
-                contractAssetUpdate.PawnableProductId = contractAsset.PawnableProductId;
-                contractAssetUpdate.Description = contractAsset.Description;
-                contractAssetUpdate.Image = contractAsset.Image;
-                contractAssetUpdate.Status = contractAsset.Status;
                 _unitOfWork.ContractAssets.Update(contractAssetUpdate);
                 var result = _unitOfWork.Save();
                 if (result > 0)
@@ -85,6 +83,16 @@ namespace Services.Services
                 }
             }
             return false;
+        }
+
+        public async Task<IEnumerable<ContractAsset>> GetContractAssetsByWarehouseId(int warehouseId)
+        {
+            if (warehouseId != null)
+            {
+                var assetList = await _contractAssetRepository.GetContractAssetByWarehouseId(warehouseId);
+                return (List<ContractAsset>) assetList;
+            }
+            return null; 
         }
     }
 }

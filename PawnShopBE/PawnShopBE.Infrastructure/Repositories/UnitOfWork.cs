@@ -48,7 +48,9 @@ namespace PawnShopBE.Infrastructure.Repositories
         public ICustomerRelativeRelationshipRepository CustomersRelativeRelationships { get; }
 
         public IRansomRepository Ransoms { get; }
-
+        public IPermissionReporsitory Permission { get; }
+        public IUserPermissionGroupRepository UserPermissionGroup { get; }
+        public ILogContractRepository LogContracts { get; }
         public UnitOfWork(  DbContextClass dbContext,
                             IUserRepository userRepository, 
                             IBranchRepository branchRepository,
@@ -67,7 +69,9 @@ namespace PawnShopBE.Infrastructure.Repositories
         IDependentPeopleRepository dependentPeopleRepository,
         IJobRepository jobRepository,
         ICustomerRelativeRelationshipRepository customerRelativeRelationshipRepository,
-        IRansomRepository ransomRepository)
+        IRansomRepository ransomRepository,IPermissionReporsitory permissionReporsitory,
+        IUserPermissionGroupRepository userPermissionGroupRepository,
+        ILogContractRepository logContractRepository)
         {
             _dbContext = dbContext;
             Users = userRepository;
@@ -88,6 +92,9 @@ namespace PawnShopBE.Infrastructure.Repositories
             Jobs = jobRepository;
             CustomersRelativeRelationships = customerRelativeRelationshipRepository;
             Ransoms = ransomRepository;
+            Permission= permissionReporsitory;
+            UserPermissionGroup= userPermissionGroupRepository;
+            LogContracts = logContractRepository;
         }
 
      

@@ -35,7 +35,7 @@ namespace Services.Services
             return false;
         }
 
-        public async Task<IEnumerable<PawnShopBE.Core.Models.Attribute>> GetAttributeByPawnableId(int pawnableProductId)
+        public async Task<IEnumerable<PawnShopBE.Core.Models.Attribute>> GetAttributesByPawnableId(int pawnableProductId)
         {
             if (pawnableProductId != null)
             {

@@ -9,5 +9,6 @@ namespace PawnShopBE.Core.Interfaces
 {
     public interface IContractAssetRepository : IGenericRepository<ContractAsset>
     {
+        public Task<IEnumerable<ContractAsset>> GetContractAssetByWarehouseId(int warehouseId);
     }
 }

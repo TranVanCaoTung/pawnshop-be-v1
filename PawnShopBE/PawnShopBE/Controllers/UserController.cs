@@ -55,7 +55,7 @@ namespace PawnShopBE.Controllers
                 return BadRequest();
             }
         }
-        [Authorize]
+       // [Authorize]
         [HttpGet("getAll/{numPage}")]
         public async Task<IActionResult> getUserList(int numPage)
         {
@@ -82,11 +82,11 @@ namespace PawnShopBE.Controllers
             }
         }
         [Authorize]
-        [HttpPut("updateUser/{userId:guid}")]
-        public async Task<IActionResult> UpdateUser(Guid id, UserDTO request)
+        [HttpPut("updateUser")]
+        public async Task<IActionResult> UpdateUser( UserDTO request)
         {
           
-            if (request != null && request.UserId == id)
+            if (request != null )
             {
                 var user = _mapper.Map<User>(request);
                 var response = await _userService.UpdateUser(user);

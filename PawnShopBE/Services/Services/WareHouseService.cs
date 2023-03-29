@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Org.BouncyCastle.Bcpg;
+using PawnShopBE.Core.Const;
+using PawnShopBE.Core.Display;
 
 namespace Services.Services
 {
@@ -26,49 +29,67 @@ namespace Services.Services
             _pawnable=pawnable;
             _mapper=mapper;
         }
-        
+       
         public async Task<WareHouseDTO> getWareHouseDetail(int id,int num)
         {
-            //get List Asset
-            var listAsset= await _asset.GetAllContractAssets();
-            var asset = from l in listAsset where l.WarehouseId== id select l;
+            //get all List
+            var listWarehouse = await GetWareHouse(0);
+            var listAsset = await _asset.GetAllContractAssets();
+            var listPawnable = await _pawnable.GetAllPawnableProducts(0);
 
-            //get pawnable
-            var getPawnableId = from l in asset select l.PawnableProductId;
-            var pawnableID= getPawnableId.First();
-            var listPawnable= await _pawnable.GetAllPawnableProducts(0);
-            var pawnable= from p in listPawnable where p.PawnableProductId==pawnableID select p;
+            //get field
+            var wareHouse = (from w in listWarehouse where w.WarehouseId == id select w).FirstOrDefault();
+            if (wareHouse != null)
+            {
+                var asset = from l in listAsset where l.WarehouseId == id select l;
 
-            //get wareHouse Detail
-            var wareHouseDTO = new WareHouseDTO();
-            wareHouseDTO.ContractAssets=new List<ContractAssetDTO>();
-            wareHouseDTO=getAssetDTO(wareHouseDTO,asset,pawnable);
+                //get wareHouse Detail
+                var wareHouseDTO = new WareHouseDTO();
+                wareHouseDTO.ContractAssets = new List<ContractAssetDTO>();
+                wareHouseDTO.ContractAssets = getAssetDTO(wareHouseDTO, asset, listPawnable);
+                wareHouseDTO.WarehouseId = id;
+                wareHouseDTO.WarehouseName = wareHouse.WarehouseName;
+                wareHouseDTO.WarehouseAddress = wareHouse.WarehouseAddress;
+                wareHouseDTO.Status = wareHouse.Status;
 
-            //Mapper Asset To Skip Take PAge
-            var assetMaper = _mapper.Map<IEnumerable<ContractAsset>>(wareHouseDTO.ContractAssets);
-            var takeAsset =await _unit.ContractAssets.TakePage(num, assetMaper);
-            var assetDTO = _mapper.Map<ICollection<ContractAssetDTO>>(takeAsset);
-            wareHouseDTO.ContractAssets = assetDTO;
-
-            return wareHouseDTO;
+                //Mapper Asset To Skip Take PAge
+                var result = TakePage(num, wareHouseDTO.ContractAssets);
+                wareHouseDTO.ContractAssets = result.ToList();
+                return wareHouseDTO;
+            }
+            else
+            {
+                return null;
+            }
         }
-
-        private WareHouseDTO getAssetDTO(WareHouseDTO wareHouseDTO, IEnumerable<ContractAsset> asset,
-            IEnumerable<PawnableProduct> pawnable)
+        private IEnumerable<ContractAssetDTO> TakePage(int number, IEnumerable<ContractAssetDTO> list)
+        {
+            var numPage = (int)NumberPage.numPage;
+            var skip = (numPage * number) - numPage;
+            return list.Skip(skip).Take(numPage);
+        }
+        private ICollection<ContractAssetDTO> getAssetDTO(WareHouseDTO wareHouseDTO, IEnumerable<ContractAsset> asset,
+           IEnumerable<PawnableProduct> pawnable)
         {
             foreach (var x in asset)
             {
                 var assetDTO = new ContractAssetDTO();
+                assetDTO.ContractAssetId = x.ContractAssetId;
                 assetDTO.ContractAssetName = x.ContractAssetName;
                 assetDTO.Description = x.Description;
                 assetDTO.Image = x.Image;
-                foreach (var y in pawnable)
-                {
-                    assetDTO.commodifyCode = y.CommodityCode;
-                }
+                assetDTO.PawnableProductId= x.PawnableProductId;
+                assetDTO.commodifyCode = getComodifycode(x.PawnableProductId,pawnable);
                 wareHouseDTO.ContractAssets.Add(assetDTO);
             }
-            return wareHouseDTO;
+            return wareHouseDTO.ContractAssets;
+        }
+
+        private string getComodifycode(int pawnableProductId, IEnumerable<PawnableProduct> pawnable)
+        {
+            var pawnableList = from p in pawnable where p.PawnableProductId == pawnableProductId select p;
+            var commodifyCode= pawnableList.FirstOrDefault();
+            return commodifyCode.CommodityCode;
         }
 
         public async Task<bool> CreateWareHouse(Warehouse warehouse)

@@ -41,12 +41,14 @@ namespace PawnShopBE.Infrastructure.Helpers
         public DbSet<Kyc> Kyc { get; set; }
         public DbSet<Ransom> Ransom { get; set; }
         public DbSet<Admin> Admin { get; set; }
-
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<UserPermissionGroup> UserPermissionGroups { get; set; }
+        public DbSet<LogContract> LogContracts { get; set; }
         #endregion
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+       {
             modelBuilder.Entity<User>(entity =>
             {
                 // Table mapping to db
@@ -181,6 +183,16 @@ namespace PawnShopBE.Infrastructure.Helpers
             {
                 entity.ToTable("Admin");
                 entity.HasNoKey();
+            });
+            modelBuilder.Entity<UserPermissionGroup>(entity =>
+            {
+                entity.HasKey(e => new{e.perId, e.UserId});
+            });
+            modelBuilder.Entity<LogContract>(entity =>
+            {
+                entity.ToTable("LogContract");
+                entity.HasKey(l => l.LogContractId);
+                entity.HasOne(l => l.Contract).WithMany(c => c.LogContracts).HasForeignKey(l => l.ContractId).IsRequired(true);
             });
         }
 

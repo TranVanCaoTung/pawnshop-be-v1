@@ -12,6 +12,7 @@ namespace PawnShopBE.Core.DTOs
 {
     public class WareHouseDTO
     {
+        public int WarehouseId { get; set; }
         [Required(ErrorMessage =  "Tên kho không được để trống")]
         [StringLength(30,MinimumLength =6,ErrorMessage ="Tên kho phải dài từ 6 - 30 ký tự")]
         [Description("Tên Kho")]

@@ -12,6 +12,7 @@ namespace Services.Services.IServices
         Task<bool> CreateContractAsset(ContractAsset contractAsset);
 
         Task<IEnumerable<ContractAsset>> GetAllContractAssets();
+        Task<IEnumerable<ContractAsset>> GetContractAssetsByWarehouseId(int warehouseId);
 
         Task<ContractAsset> GetContractAssetById(int contractAssetId);
 

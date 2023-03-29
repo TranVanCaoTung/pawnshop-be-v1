@@ -13,7 +13,7 @@ namespace Services.Services
     public class LedgerService : ILedgerService
     {
         private readonly IUnitOfWork _unit;
-        private readonly Ledger _ledger;
+        private readonly Ledger _ledgerService;
 
         public LedgerService(IUnitOfWork unitOfWork)
         {
@@ -35,7 +35,7 @@ namespace Services.Services
 
         public async Task<bool> DeleteLedger(int ledgerId)
         {
-            var ledgerDelete = _unit.Ledgers.SingleOrDefault(_ledger, j => j.LedgerId == ledgerId);;
+            var ledgerDelete = _unit.Ledgers.SingleOrDefault(_ledgerService, j => j.LedgerId == ledgerId);;
             if (ledgerDelete != null)
             {
                 _unit.Ledgers.Delete(ledgerDelete);

@@ -23,29 +23,29 @@ namespace Services.Services
         private readonly IContractService _contractService;
         private readonly IPackageService _packageService;
         private readonly IInteresDiaryService _interesDiaryService;
-        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService)
+        private readonly ILogContractService _logContractService;
+        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService)
         {
             _contextClass = dbContextClass;
             _contractService = contractService;
             _packageService = packageService;
             _interesDiaryService = interesDiaryService;
+            _logContractService = logContractService;
         }
         public async Task Execute(IJobExecutionContext context)
         {
-            // IN_PROGRESS turn into OVER_DUE contracts
+            // Contracts IN_PROGRESS turn into OVER_DUE 
             var overdueContracts = _contextClass.Contract
-                        .Where(c => c.Status == (int) ContractConst.IN_PROGRESS && c.ContractEndDate < DateTime.Today)
+                        .Where(c => c.Status == (int)ContractConst.IN_PROGRESS && c.ContractEndDate < DateTime.Today)
                         .ToList();
             foreach (var contract in overdueContracts)
             {
                 contract.Status = (int)ContractConst.OVER_DUE;
             }
-            var diaries = _contextClass.InterestDiary
-                        .ToList().Count();
 
             // Ransom on time
             var ramsomsOnTime = _contextClass.Ransom
-                        .Where(r => r.Status == (int) RansomConsts.SOON && r.Contract.ContractEndDate == DateTime.Today)
+                        .Where(r => r.Status == (int)RansomConsts.SOON && r.Contract.ContractEndDate == DateTime.Today)
                         .ToList();
             foreach (var ransom in ramsomsOnTime)
             {
@@ -62,7 +62,7 @@ namespace Services.Services
             foreach (var ransom in ransomOverDueDate)
             {
                 var contract = await _contractService.GetContractById(ransom.ContractId);
-                var package = await _packageService.GetPackageById(contract.PackageId, contract.InterestRecommend);
+                var package = await _packageService.GetPackageById(contract.PackageId);
 
                 // Calculate how many days that overdue
                 TimeSpan timeDifference = DateTime.Now - contract.ContractEndDate;
@@ -87,7 +87,7 @@ namespace Services.Services
                 // Penalty between 1 month to 3 month
                 else
                 {
-                    if (totalDays == (double) package.PunishDay1 || totalDays < (double)package.LiquitationDay)
+                    if (totalDays == (double)package.PunishDay1 || totalDays < (double)package.LiquitationDay)
                     {
                         ransom.Penalty = paymentFee;
                     }
@@ -98,41 +98,9 @@ namespace Services.Services
                     contract.Status = (int)ContractConst.LIQUIDATION;
                 }
                 ransom.Status = (int)RansomConsts.LATE;
-            }
-
-            // Ransom before day contract end
-            //for (int i = 1; i <= diaries; i++) {
-
-            //    var interestDiaryList = await _interesDiaryService.GetInteresDiaryByContractId(i);
-            //    if (interestDiaryList == null)
-            //    {
-            //        break;
-            //    }
-
-            //    var result = _contextClass.InterestDiary
-            //            .Where(x => x.ContractId == interestDiaryList.ContractId)
-            //            .OrderBy(x => x.NextDueDate)
-            //            .Select((x, i) => new { Index = i + 1, Item = x })
-            //            .ToList();
-
-            //    var middleIndex = result.Count / 2;
-
-            //    var middleRow = result.SingleOrDefault(x => x.Index == middleIndex);
-
-            //    if (middleRow != null)
-            //    {
-            //        var entity = middleRow.Item;
-            //        if (entity.PaidMoney != null)
-            //        {
-
-            //        }
-            //        // access the entity's properties               
-            //    }
-            //}
-
-
+            }       
             var overdueDiaries = _contextClass.InterestDiary
-                        .Where(d => d.Status == (int)InterestDiaryConsts.NOT_PAID && d.NextDueDate < DateTime.Today)
+                        .Where(d => d.Status == (int)InterestDiaryConsts.NOT_PAID && d.NextDueDate < DateTime.Today && d.Penalty == 0)
                         .ToList();
 
             foreach (var diary in overdueDiaries)
@@ -142,10 +110,34 @@ namespace Services.Services
                 {
                     diary.Penalty = diary.Payment / 2;
                 }
-                diary.TotalPay = diary.Penalty + diary.Payment;              
-            }
-           
+                diary.TotalPay = diary.Penalty + diary.Payment;
 
+                // Log Contract when overdueDate
+                var contractJoinUserJoinCustomer = from contract in _contextClass.Contract
+                                                   join customer in _contextClass.Customer
+                                                   on contract.CustomerId equals customer.CustomerId
+                                                   join user in _contextClass.User
+                                                   on contract.UserId equals user.UserId
+                                                   select new
+                                                   {
+                                                       ContractId = contract.ContractId,
+                                                       UserName = user.FullName,
+                                                       CustomerName = customer.FullName,
+                                                   };
+                var logContract = new LogContract();
+                foreach (var row in contractJoinUserJoinCustomer)
+                {
+                    logContract.ContractId = row.ContractId;
+                    logContract.UserName = row.UserName;
+                    logContract.CustomerName = row.CustomerName;
+                }
+                logContract.Debt = diary.TotalPay;
+                logContract.Paid = 0;
+                logContract.Description = diary.NextDueDate.ToString("MM/dd/yyyy HH:mm");
+                logContract.EventType = (int)LogContractConst.INTEREST_NOT_PAID;
+                logContract.LogTime = DateTime.Now;
+                await _logContractService.CreateLogContract(logContract);
+            }
             _contextClass.SaveChanges();
         }
     }

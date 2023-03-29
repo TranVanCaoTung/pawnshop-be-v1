@@ -9,6 +9,7 @@ namespace PawnShopBE.Core.Const
     public enum ContractAssetConst
     {
         IN_STOCK = 1,
-        OUT_STOCK = 2
+        OUT_STOCK = 2,
+        LIQUIDATION = 3
     }
 }
