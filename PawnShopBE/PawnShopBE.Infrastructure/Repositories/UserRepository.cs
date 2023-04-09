@@ -15,5 +15,10 @@ namespace PawnShopBE.Infrastructure.Repositories
         {
 
         }
+
+        public async Task<User> GetUserByEmail(string email)
+        {
+            return _dbContext.User.FirstOrDefault(u => u.Email == email);
+        }
     }
 }

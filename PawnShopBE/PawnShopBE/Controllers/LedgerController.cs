@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
@@ -9,6 +10,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/ledger")]
     [ApiController]
+    [Authorize]
     public class LedgerController : ControllerBase
     {
         private readonly ILedgerService _ledgerService;
@@ -29,39 +31,38 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        private Validation<LedgerDTO> _validation=new Validation<LedgerDTO>();
         
-    [HttpPost("createLedger")]
-        public async Task<IActionResult> CreateLedger(LedgerDTO ledger)
-        {
-            //Check Validation
-            var checkValidation = await _validation.CheckValidation(ledger);
-            if (checkValidation != null)
-            {
-                return BadRequest(checkValidation);
-            }
-            var ledgerMapper = _mapper.Map<Ledger>(ledger);
-            var respone = await _ledgerService.CreateLedger(ledgerMapper);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
-        }
+    //[HttpPost("createLedger")]
+    //    public async Task<IActionResult> CreateLedger( LedgerDTO ledger)
+    //    {
+    //        //Check Validation
+    //        var checkValidation = await _validation.CheckValidation(ledger);
+    //        if (checkValidation != null)
+    //        {
+    //            return BadRequest(checkValidation);
+    //        }
+    //        var ledgerMapper = _mapper.Map<Ledger>(ledger);
+    //        var respone = await _ledgerService.CreateLedger(ledgerMapper);
+    //        if (respone != null)
+    //        {
+    //            return Ok(respone);
+    //        }
+    //        return BadRequest();
+    //    }
 
-        [HttpDelete("deleteLedger/{id}")]
-        public async Task<IActionResult> DeleteLedger(int id)
-        {
-            var respone = await _ledgerService.DeleteLedger(id);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
-        }
+        //[HttpDelete("deleteLedger/{id}")]
+        //public async Task<IActionResult> DeleteLedger( int id)
+        //{
+        //    var respone = await _ledgerService.DeleteLedger(id);
+        //    if (respone != null)
+        //    {
+        //        return Ok(respone);
+        //    }
+        //    return BadRequest();
+        //}
 
         [HttpPut("updateLedger")]
-        public async Task<IActionResult> UpdateLedger(LedgerDTO ledger)
+        public async Task<IActionResult> UpdateLedger( LedgerDTO ledger)
         {
             var ledgerUpdate=_mapper.Map<Ledger>(ledger);
             var respone = await _ledgerService.UpdateLedger(ledgerUpdate);

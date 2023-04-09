@@ -12,8 +12,8 @@ using PawnShopBE.Infrastructure.Helpers;
 namespace PawnShopBE.Infrastructure.Migrations
 {
     [DbContext(typeof(DbContextClass))]
-    [Migration("20230315131402_DbInit")]
-    partial class DbInit
+    [Migration("20230407075133_addAdmin")]
+    partial class addAdmin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,23 @@ namespace PawnShopBE.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.Admin", b =>
+                {
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("Admin", (string)null);
+                });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Attribute", b =>
                 {
@@ -116,6 +133,9 @@ namespace PawnShopBE.Infrastructure.Migrations
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CustomerVerifyImg")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -440,6 +460,12 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("Fund")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("LiquidationMoney")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Loan")
                         .HasColumnType("decimal(18,2)");
 
@@ -473,14 +499,14 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Property<int>("ContractId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Description")
-                        .HasColumnType("int");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("LiquidationMoney")
-                        .HasColumnType("int");
+                    b.Property<decimal>("LiquidationMoney")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("liquidationDate")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("liquidationDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("LiquidationId");
 
@@ -488,6 +514,81 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Liquidtation", (string)null);
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.LogContract", b =>
+                {
+                    b.Property<int>("LogContractId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LogContractId"));
+
+                    b.Property<int>("ContractId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Debt")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EventType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LogTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Paid")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("LogContractId");
+
+                    b.HasIndex("ContractId");
+
+                    b.ToTable("LogContract", (string)null);
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.Money", b =>
+                {
+                    b.Property<int>("MoneyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MoneyId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateCreate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("Fund")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MoneyInput")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MoneyId");
+
+                    b.HasIndex("BranchId");
+
+                    b.ToTable("Money");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Package", b =>
@@ -550,6 +651,29 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.HasKey("PawnableProductId");
 
                     b.ToTable("PawnableProduct", (string)null);
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.Permission", b =>
+                {
+                    b.Property<int>("perId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("perId"));
+
+                    b.Property<string>("description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("namePermission")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.HasKey("perId");
+
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Ransom", b =>
@@ -621,12 +745,7 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("RefeshToken");
                 });
@@ -700,6 +819,24 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("User", (string)null);
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.UserPermissionGroup", b =>
+                {
+                    b.Property<int>("perId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.HasKey("perId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPermissionGroups");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Warehouse", b =>
@@ -876,6 +1013,28 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("Contract");
                 });
 
+            modelBuilder.Entity("PawnShopBE.Core.Models.LogContract", b =>
+                {
+                    b.HasOne("PawnShopBE.Core.Models.Contract", "Contract")
+                        .WithMany("LogContracts")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.Money", b =>
+                {
+                    b.HasOne("PawnShopBE.Core.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+                });
+
             modelBuilder.Entity("PawnShopBE.Core.Models.Ransom", b =>
                 {
                     b.HasOne("PawnShopBE.Core.Models.Contract", "Contract")
@@ -885,17 +1044,6 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Contract");
-                });
-
-            modelBuilder.Entity("PawnShopBE.Core.Models.RefeshToken", b =>
-                {
-                    b.HasOne("PawnShopBE.Core.Models.User", "user")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.User", b =>
@@ -915,6 +1063,25 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("PawnShopBE.Core.Models.UserPermissionGroup", b =>
+                {
+                    b.HasOne("PawnShopBE.Core.Models.User", "User")
+                        .WithMany("UserPermissionGroups")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PawnShopBE.Core.Models.Permission", "Permission")
+                        .WithMany()
+                        .HasForeignKey("perId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("PawnShopBE.Core.Models.Branch", b =>
                 {
                     b.Navigation("Contracts");
@@ -929,6 +1096,8 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("InterestDiaries");
 
                     b.Navigation("Liquidtation");
+
+                    b.Navigation("LogContracts");
 
                     b.Navigation("Ransom");
                 });
@@ -975,6 +1144,8 @@ namespace PawnShopBE.Infrastructure.Migrations
             modelBuilder.Entity("PawnShopBE.Core.Models.User", b =>
                 {
                     b.Navigation("Contracts");
+
+                    b.Navigation("UserPermissionGroups");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Warehouse", b =>

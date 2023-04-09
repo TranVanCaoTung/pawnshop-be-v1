@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Helpers;
+using PawnShopBE.Infrastructure.Helpers;
 using Services.Services.IServices;
 using System;
 using System.Collections.Generic;
@@ -16,19 +19,22 @@ namespace Services.Services
     public class UserService : IUserService
     {
         public IUnitOfWork _unitOfWork;
-        private readonly string _gmail= "nguyentuanvu020901@gmail.com";
-        private readonly string _pass = "fhnwtwqisekdqzcr";
         private IMapper _mapper;
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
+        private DbContextClass _dbContextClass;
+        private IUserRepository _userRepository;
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, DbContextClass dbContextClass, IUserRepository userRepository)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _dbContextClass = dbContextClass;
+            _userRepository = userRepository;
         }
         public async Task<bool> CreateUser(User user)
         {
             if (user != null)
             {
                 user.CreateTime = DateTime.Now;
+                user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
                 await _unitOfWork.Users.Add(user);
 
                 var result = _unitOfWork.Save();
@@ -40,37 +46,62 @@ namespace Services.Services
             }
             return false;
         }
-        public async Task<bool> sendEmail(UserDTO userDTO)
+
+        public async Task<bool> CreateAdmin(Admin admin)
         {
-            string sendto = userDTO.Email;
-            string subject = "Recover Password of "+userDTO.FullName;
-            string content = "Your New Password is abc";
-            //set new password
-            userDTO.Password = "abc";
-            //update password
-            var user= _mapper.Map<User>(userDTO);
-            await UpdateUser(user);
+            if (admin != null)
+            {
+                admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password);  
+                
+                _dbContextClass.Admin.Add(admin);
+                var result = _dbContextClass.SaveChanges();           
+                return (result > 0) ? true: false;       
+            }
+            return false;
+        }
+        public async Task<bool> sendEmail(string email)
+        {
             try
             {
-                MailMessage mail=new MailMessage();
-                SmtpClient smtp=new SmtpClient("smtp.gmail.com");
+                var user = await _userRepository.GetUserByEmail(email);
+                if (user == null)
+                {
+                    return false;
+                }
+                string _gmail = "hethongpawns@gmail.com";
+                string _password = "fnblmxkfeaeilbxs";
+                string randomPassword = HelperFuncs.GeneratePassword(10);
+
+                string sendto = user.Email;
+                string subject = "[PAWNSHOP] - Khôi phục mật khẩu";
+                string content = "Mật khẩu mới cho tài khoản đăng nhập " + user.UserName + " : " + randomPassword + ".\nĐường link quay lại trang đăng nhập: ";
+
+                // Create random password
+                //set new password
+                user.Password = randomPassword;
+                //update password
+                await UpdateUser(user);
+
+                MailMessage mail = new MailMessage();
+                SmtpClient smtp = new SmtpClient("smtp.gmail.com");
                 //set property for email you want to send
                 mail.From = new MailAddress(_gmail);
                 mail.To.Add(sendto);
                 mail.Subject = subject;
-                mail.IsBodyHtml= true;
+                mail.IsBodyHtml = true;
                 mail.Body = content;
-                mail.Priority=MailPriority.High;
+                mail.Priority = MailPriority.High;
                 //set smtp port
                 smtp.Port = 587;
-                smtp.UseDefaultCredentials= false;
+                smtp.UseDefaultCredentials = false;
                 //set gmail pass sender
-                smtp.Credentials= new NetworkCredential(_gmail, _pass);
+                smtp.Credentials = new NetworkCredential(_gmail, _password);
                 smtp.EnableSsl = true;
                 smtp.Send(mail);
 
                 return true;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
                 return false;
@@ -102,7 +133,7 @@ namespace Services.Services
             {
                 return userList;
             }
-            var result= await _unitOfWork.Users.TakePage(num,userList);
+            var result = await _unitOfWork.Users.TakePage(num, userList);
             return result;
         }
 
@@ -127,7 +158,7 @@ namespace Services.Services
                 if (userUpdate != null)
                 {
                     userUpdate.UserName = user.UserName;
-                    userUpdate.Password = user.Password;
+                    userUpdate.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
                     userUpdate.Status = user.Status;
                     userUpdate.Email= user.Email;
                     userUpdate.Phone = user.Phone;

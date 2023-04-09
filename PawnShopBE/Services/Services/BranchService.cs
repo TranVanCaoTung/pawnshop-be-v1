@@ -181,8 +181,12 @@ namespace Services.Services
                 var branchUpdate = await _unitOfWork.Branches.GetById(id);
                 if (branchUpdate != null)
                 {
+                    branchUpdate.PhoneNumber = branch.PhoneNumber;
+                    branchUpdate.Address = branch.Address;
+                    branchUpdate.Fund = branch.Fund;
                     branchUpdate.BranchName = branch.BranchName;
                     branchUpdate.UpdateDate = DateTime.Now;
+                    branchUpdate.Status = branch.Status;
                     _unitOfWork.Branches.Update(branchUpdate);
 
                     var result = _unitOfWork.Save();

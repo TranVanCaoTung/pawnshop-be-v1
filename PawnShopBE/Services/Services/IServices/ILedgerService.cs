@@ -11,8 +11,7 @@ namespace Services.Services.IServices
     {
         Task<bool> CreateLedger(Ledger ledger);
         Task<IEnumerable<Ledger>> GetLedger();
-        Task<Ledger> GetLedgerById(int ledgerId);
+        Task<IEnumerable<Ledger>> GetLedgersByBranchId(int branchId);
         Task<bool> UpdateLedger(Ledger ledger);
-        Task<bool> DeleteLedger(int ledgerId);
     }
 }

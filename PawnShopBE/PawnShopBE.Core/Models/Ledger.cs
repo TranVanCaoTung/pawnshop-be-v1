@@ -10,9 +10,11 @@ namespace PawnShopBE.Core.Models
     {
         public int LedgerId { get; set; }
         public int BranchId { get; set; }
+        public decimal Fund { get; set; }
         public decimal ReceivedPrincipal { get; set; }
         public decimal RecveivedInterest { get; set; }
         public decimal Loan { get; set; }
+        public decimal LiquidationMoney { get; set; }
         public long Balance { get; set; }
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }

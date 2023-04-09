@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
@@ -9,6 +10,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/interestDiary")]
     [ApiController]
+    [Authorize]
     public class InterestDiaryController : ControllerBase
     {
         private readonly IInteresDiaryService _interestDiaryService;

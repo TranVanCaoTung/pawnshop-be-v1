@@ -12,7 +12,7 @@ namespace PawnShopBE.Core.Models
         public int ContractId { get; set; }
         public decimal LiquidationMoney { get; set; }
         public DateTime liquidationDate { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
 
         public virtual Contract? Contract { get; set; }

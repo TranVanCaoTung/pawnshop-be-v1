@@ -11,7 +11,7 @@ namespace Services.Services.IServices
     public interface IUserService
     {
         Task<bool> CreateUser(User user);
-
+        Task<bool> CreateAdmin(Admin admin);
         Task<IEnumerable<User>> GetAllUsers(int num);
 
         Task<User> GetUserById(Guid userId);
@@ -19,6 +19,6 @@ namespace Services.Services.IServices
         Task<bool> UpdateUser(User user);
 
         Task<bool> DeleteUser(Guid userId);
-        Task<bool> sendEmail(UserDTO userDTO);
+        Task<bool> sendEmail(string email);
     }
 }

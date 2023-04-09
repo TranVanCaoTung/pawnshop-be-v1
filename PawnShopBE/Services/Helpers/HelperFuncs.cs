@@ -1,6 +1,8 @@
 ﻿using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Infrastructure.Helpers;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace PawnShopBE.Helpers
 {
@@ -33,5 +35,26 @@ namespace PawnShopBE.Helpers
 
             return periods;
         }
+
+        public static string GeneratePassword(int length)
+        {
+            const string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]\\|:;<>,.?/";
+            byte[] randomBytes = new byte[length];
+
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(randomBytes);
+            }
+
+            StringBuilder password = new StringBuilder();
+
+            foreach (byte b in randomBytes)
+            {
+                password.Append(validChars[b % validChars.Length]);
+            }
+
+            return password.ToString();
+        }
+
     }
 }

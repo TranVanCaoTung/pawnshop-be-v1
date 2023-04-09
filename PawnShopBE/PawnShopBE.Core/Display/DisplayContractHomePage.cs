@@ -23,6 +23,7 @@ namespace PawnShopBE.Core.Display
         public decimal? recveivedInterest { get; set; } = 0;
         public decimal? totalProfit { get; set; } = 0;
         public decimal? ransomTotal { get; set;} = 0;
+        public decimal? openContract { get; set;} = 0;
 
     }
 }

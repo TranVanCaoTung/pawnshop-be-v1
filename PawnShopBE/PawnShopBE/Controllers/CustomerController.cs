@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Org.BouncyCastle.Utilities;
@@ -13,6 +14,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/customer")]
     [ApiController]
+    [Authorize]
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customer;
@@ -24,7 +26,7 @@ namespace PawnShopBE.Controllers
             _mapper = mapper;
         }
         [HttpGet("getRelative/{id}")]
-        public async Task<IActionResult> getCustomerRelative(Guid id)
+        public async Task<IActionResult> getCustomerRelative( Guid id)
         {
             var respone= await _customer.getRelative(id);
             if (respone != null)
@@ -35,7 +37,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPost("createRelative/{id}")]
-        public async Task<IActionResult> createCustomerRelative(Guid id, Relative_Job_DependentDTO customer)
+        public async Task<IActionResult> createCustomerRelative( Guid id, Relative_Job_DependentDTO customer)
         {
             var respone = await _customer.createRelative(id,customer);
             if (respone)
@@ -44,17 +46,11 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        private Validation<CustomerDTO> _validation=new Validation<CustomerDTO>();
 
         [HttpPost("createCustomer")]
-        public async Task<IActionResult> CreateCustomer(CustomerDTO customer)
+        public async Task<IActionResult> CreateCustomer( CustomerDTO customer)
         {
-          //  Check Validation
-            var checkValidation = await _validation.CheckValidation(customer);
-            if (checkValidation != null)
-            {
-                return BadRequest(checkValidation);
-            }
+         
             //get Kyc id
             customer.KycId = await _customer.createKyc(customer);
             //create Customer

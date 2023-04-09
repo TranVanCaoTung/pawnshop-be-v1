@@ -14,19 +14,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
 using Services.Services.IServices;
 using PawnShopBE.Core.Const;
+using AutoMapper;
+using PawnShopBE.Core.Responses;
 
 namespace PawnShopBE.Controllers
 {
-    [Route("api/authentication/login/")]
+    [Route("api/v1/authentication")]
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
         private readonly DbContextClass _context;
         private IAuthentication _authen;
-        public AuthenticationController(DbContextClass context,IAuthentication authentication) 
+        private IMapper _mapper;
+        public AuthenticationController(DbContextClass context, IAuthentication authentication, IMapper mapper)
         {
             _context = context;
             _authen = authentication;
+            _mapper = mapper;
         }
         [HttpPost("renewToken")]
         public async Task<IActionResult> RenewToken(TokenModel tokenmodel)
@@ -34,30 +38,58 @@ namespace PawnShopBE.Controllers
             var token = tokenmodel;
             if (token != null)
             {
-               var respone = await _authen.RenewToken(token);
+                var respone = await _authen.RenewToken(token);
                 return Ok(respone);
             }
             return BadRequest();
         }
-        [HttpPost("create")]
-        public async Task<IActionResult> Validate(Login login)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(Login login)
         {
-            var admin= _context.Admin.SingleOrDefault(p => p.UserName == login.userName &&
-            p.Password== login.password);
-            if(admin == null)
+            //var result=await _authen.Login(login);
+            var user = _context.User.SingleOrDefault(p => p.UserName == login.userName);
+            if (user != null)
             {
-                return BadRequest(new
+                bool isValidPassword = BCrypt.Net.BCrypt.Verify(login.password, user.Password);
+                if (isValidPassword)
                 {
-                    result="Invalid UserName or Password"
-                });
+                    var userRepsonse = _mapper.Map<UserRepsonse>(user);
+                    // cấp token
+                    var token = await _authen.GenerateToken();
+                    if (token != null)
+                    {
+                        return Ok(new
+                        {
+                            Account = userRepsonse,
+                            Token = token
+                        });
+                    }
+                }
             }
-            // cấp token
-            var token = await _authen.GenerateToken(admin);
-            if (token != null)
+            
+            var admin = _context.Admin.SingleOrDefault(p => p.UserName == login.userName);
+            if (admin != null)
             {
-                return Ok(token);
+                bool isValidAdminPassword = BCrypt.Net.BCrypt.Verify(login.password, admin.Password);
+                if (isValidAdminPassword)
+                {
+                    // cấp token
+                    var token = await _authen.GenerateToken();
+                    if (token != null)
+                    {
+                        return Ok(new
+                        {
+                            Account = admin,
+                            Token = token
+                        });
+                    }
+                }
             }
-             return BadRequest();
+            
+            return BadRequest(new
+            {
+                result = "Invalid UserName or Password"
+            });
         }
         [HttpGet]
         public async Task<IActionResult> getAllToken()
@@ -70,6 +102,6 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        
+
     }
 }

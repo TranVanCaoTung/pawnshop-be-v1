@@ -55,7 +55,7 @@ namespace Services.Services
 
             //get Relative
             var listRelative = await _relative.GetCustomerRelative();
-            var Relative=from r in listRelative where r.CustomerId==idCus select r;
+            var Relative = from r in listRelative where r.CustomerId == idCus select r;
 
             //get Dependent
             var listDependent = await _dependent.GetDependent();

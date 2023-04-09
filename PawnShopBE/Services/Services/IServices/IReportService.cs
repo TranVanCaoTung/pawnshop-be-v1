@@ -10,6 +10,6 @@ namespace Services.Services.IServices
     public interface IReportService
     {
         Task<IEnumerable<DisplayReportTransaction>> getReportTransaction(int number);
-        Task<IEnumerable<DisplayReportMonth>> getReportMonth(int branchId);
+        Task<List<DisplayReportMonth>> getReportMonth(int branchId);
     }
 }

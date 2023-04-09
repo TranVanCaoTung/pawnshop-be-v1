@@ -12,6 +12,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/user")]
     [ApiController]
+    //[Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -21,28 +22,21 @@ namespace PawnShopBE.Controllers
             _userService = userService;
             _mapper = mapper;
         }
-        [HttpPost("recoverPassword")]
-        public async Task<IActionResult> recoverPass(UserDTO user)
+        [HttpPost("recoveryPassword/{email}")]
+        public async Task<IActionResult> recoverPass(string email)
         {
-            var respone = await _userService.sendEmail(user);
+            var respone = await _userService.sendEmail(email);
             if (respone)
             {
                 return Ok();
             }
             return BadRequest();
         }
-        private Validation<UserDTO> _validation=new Validation<UserDTO>();
        
-        [Authorize]
+       
         [HttpPost("createUser")]
-        public async Task<IActionResult> CreateUser(UserDTO request)
+        public async Task<IActionResult> CreateUser( UserDTO request)
         {
-            //Check Validation
-            var checkValidation = await _validation.CheckValidation(request);
-            if (checkValidation != null)
-            {
-                return BadRequest(checkValidation);
-            }
             var user = _mapper.Map<User>(request);
             var response = await _userService.CreateUser(user);
 
@@ -55,9 +49,16 @@ namespace PawnShopBE.Controllers
                 return BadRequest();
             }
         }
-       // [Authorize]
+
+        //[HttpPost("admin")]
+        //public async Task<IActionResult> CreateAdmin(Admin admin)
+        //{           
+        //    var response = await _userService.CreateAdmin(admin);
+        //    return (response) ? Ok(response) : BadRequest();
+        //}
+
         [HttpGet("getAll/{numPage}")]
-        public async Task<IActionResult> getUserList(int numPage)
+        public async Task<IActionResult> getUserList( int numPage)
         {
             var userList = await _userService.GetAllUsers(numPage);
             if (userList == null)
@@ -68,7 +69,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpGet("getUserById/{userId:guid}")]
-        public async Task<IActionResult> GetUserById(Guid userId)
+        public async Task<IActionResult> GetUserById( Guid userId)
         {
             var user = await _userService.GetUserById(userId);
 
@@ -81,9 +82,9 @@ namespace PawnShopBE.Controllers
                 return BadRequest();
             }
         }
-        [Authorize]
+      
         [HttpPut("updateUser")]
-        public async Task<IActionResult> UpdateUser( UserDTO request)
+        public async Task<IActionResult> UpdateUser(  UserDTO request)
         {
           
             if (request != null )
@@ -101,9 +102,9 @@ namespace PawnShopBE.Controllers
                 return BadRequest();
             }
         }
-        [Authorize]
+        
         [HttpDelete("deleteUser/{userId:guid}")]
-        public async Task<IActionResult> DeleteUser(Guid userId)
+        public async Task<IActionResult> DeleteUser( Guid userId)
         {
             var isUserCreated = await _userService.DeleteUser(userId);
 

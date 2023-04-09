@@ -43,12 +43,12 @@ namespace Services.Services
             if (contract != null)
             {
                 var ransom = new Ransom();
-                
+
                 ransom.ContractId = contract.ContractId;
                 ransom.Payment = contract.Loan;
                 ransom.PaidMoney = 0;
                 ransom.PaidDate = null;
-                ransom.Status = (int) RansomConsts.SOON;
+                ransom.Status = (int)RansomConsts.SOON;
                 ransom.Description = null;
                 ransom.ProofImg = null;
                 if (contract.Package.Day < 120)
@@ -59,20 +59,20 @@ namespace Services.Services
                 // Penalty for contract 6 months
                 else if (contract.Package.Day == 120)
                 {
-                    ransom.Penalty = ransom.Payment *(decimal) 0.03;
+                    ransom.Penalty = ransom.Payment * (decimal)0.03;
                 }
                 // Penalty for contract 9 months
                 else if (contract.Package.Day == 270)
                 {
-                    ransom.Penalty = ransom.Payment * (decimal) 0.04;
+                    ransom.Penalty = ransom.Payment * (decimal)0.04;
                 }
                 // Penalty for contract 12 months
                 else if (contract.Package.Day == 360)
                 {
-                    ransom.Penalty = ransom.Payment * (decimal) 0.05;
+                    ransom.Penalty = ransom.Payment * (decimal)0.05;
                 }
                 ransom.TotalPay = contract.Loan + contract.TotalProfit + ransom.Penalty;
-                
+
                 await _unitOfWork.Ransoms.Add(ransom);
 
                 var result = _unitOfWork.Save();
@@ -84,19 +84,22 @@ namespace Services.Services
             }
             return false;
         }
-        public async Task<bool> SaveRansom(int ransomId)
+        public async Task<bool> SaveRansom(int ransomId, string proofImg)
         {
             var ransomList = await GetRansom();
-            var ransom= (from r in ransomList where r.RansomId== ransomId select r).FirstOrDefault();
+            var ransom = (from r in ransomList where r.RansomId == ransomId select r).FirstOrDefault();
             if (ransom != null)
             {
                 var contractList = await _contract.GetAllContracts(0);
-                var contract= (from c in contractList where c.ContractId==ransom.ContractId select c).FirstOrDefault();
+                var contract = (from c in contractList where c.ContractId == ransom.ContractId select c).FirstOrDefault();
                 contract.ActualEndDate = DateTime.Now;
                 contract.Status = (int)ContractConst.CLOSE;
-                await _contract.UpdateContract(contract.ContractId,contract);
-                var result=await getAll_field_plus_point(ransom,ransom.Status);
-                if (result) {
+                await _contract.UpdateContract(contract.ContractId, contract);
+                var result = await getAll_field_plus_point(ransom, ransom.Status);
+                ransom.ProofImg = proofImg;
+                _unitOfWork.Ransoms.Update(ransom);
+                if (result)
+                {
                     // Close Log Contract
                     var contractJoinUserJoinCustomer = from getcontract in _dbContextClass.Contract
                                                        join customer in _dbContextClass.Customer
@@ -119,29 +122,29 @@ namespace Services.Services
                     logContract.Debt = contract.Loan;
                     logContract.Paid = contract.Loan;
                     logContract.LogTime = DateTime.Now;
-                    logContract.Description = DateTime.Now.ToString("MM/dd/yyyy HH:mm");       
+                    logContract.Description = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
                     logContract.EventType = (int)LogContractConst.CLOSE_CONTRACT;
                     await _logContractService.CreateLogContract(logContract);
                     return true;
                 }
-            }          
-                return false;           
+            }
+            return false;
         }
-        private async Task<bool> getAll_field_plus_point(Ransom ransom,int status)
+        private async Task<bool> getAll_field_plus_point(Ransom ransom, int status)
         {
             //get List all
             var packageList = await _package.GetAllPackages(0);
             var customerList = await _customer.GetAllCustomer(0);
-            var contractList=await _contract.GetAllContracts(0);
+            var contractList = await _contract.GetAllContracts(0);
 
             //get contract
-            var contract=(from c in contractList where c.ContractId == ransom.ContractId select c).FirstOrDefault();
+            var contract = (from c in contractList where c.ContractId == ransom.ContractId select c).FirstOrDefault();
             //get customer
             var customer = (from c in customerList where c.CustomerId == contract.CustomerId select c).FirstOrDefault();
             //get package
             var package = (from p in packageList where p.PackageId == contract.PackageId select p).FirstOrDefault();
 
-            if (await plusPoint(customer, package, ransom,status))
+            if (await plusPoint(customer, package, ransom, status))
             {
                 return true;
             }
@@ -150,7 +153,7 @@ namespace Services.Services
 
         private async Task<bool> plusPoint(Customer customer, Package package, Ransom ransom, int status)
         {
-            switch (status) 
+            switch (status)
             {
                 case 1:
                     //thanh toán sai hạn
@@ -186,7 +189,7 @@ namespace Services.Services
                     }
                     break;
             }
-            
+
             return false;
         }
 

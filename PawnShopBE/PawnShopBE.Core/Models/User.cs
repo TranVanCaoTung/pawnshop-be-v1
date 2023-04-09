@@ -6,10 +6,11 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace PawnShopBE.Core.Models
 {
-    public class User
+    public class User//:IdentityUser<Guid>
     {
         public Guid UserId { get; set; }
         public int RoleId { get; set; }
@@ -29,9 +30,11 @@ namespace PawnShopBE.Core.Models
         public virtual Role Role { get; set; }
         public virtual Branch? Branch { get; set; }
         public ICollection<Contract> Contracts { get; set; }
+        public ICollection<UserPermissionGroup> UserPermissionGroups { get; set; }
         public User()
         {
             Contracts = new List<Contract>();
+            UserPermissionGroups = new List<UserPermissionGroup>();
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
@@ -12,6 +13,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/ramsom")]
     [ApiController]
+    [Authorize]
     public class RansomController : ControllerBase
     {
         private readonly IRansomService _ranSomeservices;
@@ -34,7 +36,7 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
         [HttpGet("ransombyid/{contractId}")]
-        public async Task<IActionResult> ransombyContractId(int contractId)
+        public async Task<IActionResult> ransombyContractId( int contractId)
         {
 
             var response = await _ranSomeservices.GetRansomByContractId(contractId);
@@ -47,9 +49,9 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPut("saveransom/{ransomId}")]
-        public async Task<IActionResult> SaveRansom(int ransomId)
+        public async Task<IActionResult> SaveRansom(int ransomId, string proofImg)
         {
-            var response = await _ranSomeservices.SaveRansom(ransomId);
+            var response = await _ranSomeservices.SaveRansom(ransomId, proofImg);
             if (response != null)
             {
                 return Ok("Save Success");

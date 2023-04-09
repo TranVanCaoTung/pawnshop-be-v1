@@ -11,5 +11,6 @@ namespace PawnShopBE.Core.Data
         public Guid? UserId { get; set; }
         public string userName { get; set; }
         public string password { get; set; }
+        public bool remember { get; set; }
     }
 }

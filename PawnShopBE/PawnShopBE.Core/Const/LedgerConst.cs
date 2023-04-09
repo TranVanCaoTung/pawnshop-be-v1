@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace PawnShopBE.Core.Const
 {
-    public static class ApiUrlConsts
+    public enum LedgerConst
     {
-        public const string GetContractById = "contract/{id}";
+        PROFIT_REVENUE = 1,
+        LOSS_REVENUE = 2
     }
 }

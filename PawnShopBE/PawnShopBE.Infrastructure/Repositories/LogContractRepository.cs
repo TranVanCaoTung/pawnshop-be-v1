@@ -1,4 +1,5 @@
-﻿using PawnShopBE.Core.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
 using PawnShopBE.Infrastructure.Helpers;
 using System;
@@ -16,10 +17,28 @@ namespace PawnShopBE.Infrastructure.Repositories
 
         }
 
-        public async Task<LogContract> getLogContractByContractId(int contractId)
+        public async Task<IEnumerable<LogContract>> getLogContractsByContractId(int contractId)
         {
-            var logContract = _dbContext.LogContracts.FirstOrDefault(x => x.ContractId == contractId);
-            return logContract;
+            return await _dbContext.Set<LogContract>()
+            .Where(e => e.ContractId == contractId)
+            .ToListAsync();  
+        }
+        public async Task<IEnumerable<LogContract>> getLogContractsByBranchId(int branchId)
+        {
+            var contractByBranchId = await _dbContext.Set<Contract>()
+                .Where(c => c.BranchId == branchId).ToListAsync();
+            var logContractList = new List<LogContract>();
+            foreach (var contract in contractByBranchId)
+            {
+            var logContractByBranchId = await _dbContext.Set<LogContract>()
+                .Where(e => e.ContractId == contract.ContractId)
+                .ToListAsync();
+            foreach(var logContract in logContractByBranchId)
+                {
+                    logContractList.Add(logContract);
+                }             
+            }
+            return logContractList;
         }
     }
 }

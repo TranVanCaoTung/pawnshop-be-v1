@@ -8,17 +8,20 @@ namespace PawnShopBE.Core.Display
 {
     public class DisplayReportMonth
     {
-        public string branchName { get; set; }
-        public int month { get; set; }
-        public decimal fund { get; set; }
-        public decimal loan { get; set; }
+        public int BranchId { get; set; }
+        public string BranchName { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public decimal Fund { get; set; }
+        public decimal Loan { get; set; }
         // tiền lãi đã nhận
-        public decimal receiveInterest { get; set; }
+        public decimal ReceiveInterest { get; set; }
         //(tiền gốc đã nhận)
-        public decimal receivedPrincipal { get; set; }
+        public decimal ReceivedPrincipal { get; set; }
         //số dư
-        public decimal balance { get; set; }
+        public decimal Balance { get; set; }
         //tiền thanh lý
-        public decimal liquidationMoney { get; set; }
+        public decimal LiquidationMoney { get; set; }
+        public int Status { get; set; }
     }
 }

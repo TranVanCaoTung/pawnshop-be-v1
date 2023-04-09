@@ -15,7 +15,5 @@ namespace Services.Services.IServices
         Task<bool> UpdateInterestDiary(int id, decimal paidMoney);
         Task<bool> DeleteInteresDiary(int interestDiaryId);
         public Task<bool> UploadInterestDiaryImg(int interestDiaryId, string interestDiaryImg);
-        //Task<IEnumerable<InterestDiary>> GetHistoryByContractId(int contractId);
-
     }
 }

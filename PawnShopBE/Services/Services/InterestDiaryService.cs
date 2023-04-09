@@ -174,7 +174,7 @@ namespace Services.Services
                     }
                     logContract.Debt = diaryUpdate.TotalPay;
                     logContract.Paid = diaryUpdate.PaidMoney;
-                    logContract.Description = diaryUpdate.NextDueDate.ToString("MM/dd/yyyy HH:mm");
+                    logContract.Description = diaryUpdate.NextDueDate.ToString("dd/MM/yyyy HH:mm");
                     logContract.EventType = (diaryUpdate.TotalPay == diaryUpdate.PaidMoney) ? (int)LogContractConst.INTEREST_PAID : (int)LogContractConst.INTEREST_NOT_PAID;
                     logContract.LogTime = DateTime.Now;
                     if (logContract.EventType == (int)LogContractConst.INTEREST_PAID)
@@ -215,6 +215,6 @@ namespace Services.Services
             return false;
         }
 
-        
+       
     }
 }

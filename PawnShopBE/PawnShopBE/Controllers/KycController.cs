@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
@@ -9,6 +10,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/kyc")]
     [ApiController]
+    [Authorize]
     public class KycController : ControllerBase
     {
         private readonly IKycService _kycService;
@@ -29,7 +31,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPost("createKyc")]
-        public async Task<IActionResult> CreateKyc(KycDTO kyc)
+        public async Task<IActionResult> CreateKyc( KycDTO kyc)
         {
             if (kyc != null)
             {

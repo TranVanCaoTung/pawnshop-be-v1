@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
@@ -9,6 +10,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/dependentPeople")]
     [ApiController]
+    [Authorize]
     public class DependentController : ControllerBase
     {
         private readonly IDependentService _dependentService;
@@ -29,17 +31,11 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        private Validation<DependentPeopleDTO> _validation=new Validation<DependentPeopleDTO>();
        
         [HttpPost("createDependentPeople")]
-        public async Task<IActionResult> CreateDependent(DependentPeopleDTO dependent)
+        public async Task<IActionResult> CreateDependent( DependentPeopleDTO dependent)
         {
-            //Check Validation
-            var checkValidation = await _validation.CheckValidation(dependent);
-            if (checkValidation != null)
-            {
-                return BadRequest(checkValidation);
-            }
+            
             var dependentMapper  = _mapper.Map<DependentPeople>(dependent);
             var respone = await _dependentService.CreateDependent(dependentMapper);
             if (respone != null)
@@ -50,7 +46,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpDelete("deleteDependentPeople/{id}")]
-        public async Task<IActionResult> DeleteDependent(Guid id)
+        public async Task<IActionResult> DeleteDependent( Guid id)
         {
             var respone = await _dependentService.DeleteDependent(id);
             if (respone != null)
@@ -61,7 +57,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPut("updateDependentPeople")]
-        public async Task<IActionResult> UpdateDependent(DependentPeopleDTO dependent)
+        public async Task<IActionResult> UpdateDependent( DependentPeopleDTO dependent)
         {
             var dependentMapper=_mapper.Map<DependentPeople>(dependent);
             var respone = await _dependentService.UpdateDependent(dependentMapper);

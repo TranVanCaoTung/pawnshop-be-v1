@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -13,6 +14,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/pawnableProduct")]
     [ApiController]
+    [Authorize]
     public class PawnableProductController : ControllerBase
     {
 
@@ -29,7 +31,7 @@ namespace PawnShopBE.Controllers
         }
         
         [HttpGet("getAll/{numPage}")]
-        public async Task<IActionResult> GetAllPawnableProducts(int numPage)
+        public async Task<IActionResult> GetAllPawnableProducts( int numPage)
         {
             var respone = await _pawnableProductService.GetAllPawnableProducts(numPage);
             if (respone != null)
@@ -51,7 +53,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPost("createPawnable")]
-        public async Task<IActionResult> CreatePawnableProduct(PawnableDTO pawnableDTO)
+        public async Task<IActionResult> CreatePawnableProduct( PawnableDTO pawnableDTO)
         {
             var attribute = _mapper.Map<ICollection<Attribute>>(pawnableDTO.AttributeDTOs);
             var pawnable = _mapper.Map<PawnableProduct>(pawnableDTO);
@@ -65,11 +67,10 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPut("updatePawnableProduct/{pawnableProductId}")]
-        public async Task<IActionResult> UpdatePawnableProduct(int pawnableProductId,  PawnableDTO request)
+        [HttpPut("updatePawnableProduct")]
+        public async Task<IActionResult> UpdatePawnableProduct( PawnableDTO request)
         {                
                 var pawnableProduct = _mapper.Map<PawnableProduct>(request);
-                pawnableProduct.PawnableProductId = pawnableProductId;
                 var response = await _pawnableProductService.UpdatePawnableProduct(pawnableProduct);
                 if (response)
                 {

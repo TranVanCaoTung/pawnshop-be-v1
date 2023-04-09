@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using Mysqlx.Crud;
 using PawnShopBE.Core.Const;
+using PawnShopBE.Core.Data;
 using PawnShopBE.Core.Models;
 using PawnShopBE.Infrastructure.Helpers;
 using Quartz;
@@ -24,16 +25,28 @@ namespace Services.Services
         private readonly IPackageService _packageService;
         private readonly IInteresDiaryService _interesDiaryService;
         private readonly ILogContractService _logContractService;
-        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService)
+        private readonly IUserService _userService;
+        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService)
         {
             _contextClass = dbContextClass;
             _contractService = contractService;
             _packageService = packageService;
             _interesDiaryService = interesDiaryService;
             _logContractService = logContractService;
+            _userService = userService;
         }
         public async Task Execute(IJobExecutionContext context)
         {
+            // Auto Create Account Admin if it null Username: Admin, Password: Admin12345
+            var admin = _contextClass.Admin.SingleOrDefault(p => p.UserName == "Admin");
+            if (admin == null)
+            {
+                admin = new Admin();
+                admin.UserName = "Admin";
+                admin.Password = "Admin12345";
+                admin.Email = "pawnsquantri@gmail.com";
+                await _userService.CreateAdmin(admin);
+            }
             // Contracts IN_PROGRESS turn into OVER_DUE 
             var overdueContracts = _contextClass.Contract
                         .Where(c => c.Status == (int)ContractConst.IN_PROGRESS && c.ContractEndDate < DateTime.Today)
@@ -98,7 +111,7 @@ namespace Services.Services
                     contract.Status = (int)ContractConst.LIQUIDATION;
                 }
                 ransom.Status = (int)RansomConsts.LATE;
-            }       
+            }
             var overdueDiaries = _contextClass.InterestDiary
                         .Where(d => d.Status == (int)InterestDiaryConsts.NOT_PAID && d.NextDueDate < DateTime.Today && d.Penalty == 0)
                         .ToList();
@@ -133,11 +146,13 @@ namespace Services.Services
                 }
                 logContract.Debt = diary.TotalPay;
                 logContract.Paid = 0;
-                logContract.Description = diary.NextDueDate.ToString("MM/dd/yyyy HH:mm");
+                logContract.Description = diary.NextDueDate.ToString("dd/MM/yyyy HH:mm");
                 logContract.EventType = (int)LogContractConst.INTEREST_NOT_PAID;
                 logContract.LogTime = DateTime.Now;
                 await _logContractService.CreateLogContract(logContract);
             }
+
+
             _contextClass.SaveChanges();
         }
     }

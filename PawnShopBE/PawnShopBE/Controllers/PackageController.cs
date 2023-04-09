@@ -35,7 +35,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpGet("getAll/{numPage}")]
-        public async Task<IActionResult> GetAllPackages(int numPage)
+        public async Task<IActionResult> GetAllPackages( int numPage)
         {
             var packageList = await _packageService.GetAllPackages(numPage);
             if (packageList == null)

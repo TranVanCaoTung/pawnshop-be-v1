@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
@@ -9,39 +10,35 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/liquidation")]
     [ApiController]
+    [Authorize]
     public class LiquidationController : ControllerBase
     {
         private readonly ILiquidationService _liquidationService;
         private readonly IMapper _mapper;
 
-        public LiquidationController(ILiquidationService liquidationService, IMapper mapper) 
-        { 
-        _liquidationService=liquidationService;
-            _mapper=mapper;
+        public LiquidationController(ILiquidationService liquidationService, IMapper mapper)
+        {
+            _liquidationService = liquidationService;
+            _mapper = mapper;
         }
 
         [HttpGet("getAll")]
-        public async Task<IActionResult> GetAllLiquidation() {
-            var respone =await _liquidationService.GetLiquidation();
+        public async Task<IActionResult> GetAllLiquidation()
+        {
+            var respone = await _liquidationService.GetLiquidation();
             if (respone != null)
             {
                 return Ok(respone);
             }
             return BadRequest();
         }
-        private Validation<LiquidationDTO> _validation=new Validation<LiquidationDTO>();
-        
-    [HttpPost("createLiquidation")]
-        public async Task<IActionResult> CreateLiquidation(LiquidationDTO liquidation)
+
+        [HttpPost("save/{contractId}")]
+        public async Task<IActionResult> CreateLiquidation(int contractId, decimal liquidationMoney)
         {
-            //Check Validation
-            var checkValidation = await _validation.CheckValidation(liquidation);
-            if (checkValidation != null)
-            {
-                return BadRequest(checkValidation);
-            }
-            var liquidationMapper = _mapper.Map<Liquidtation>(liquidation);
-            var respone = await _liquidationService.CreateLiquidation(liquidationMapper);
+           
+            //var liquidationMapper = _mapper.Map<Liquidtation>(liquidation);
+            var respone = await _liquidationService.CreateLiquidation(contractId, liquidationMoney);
             if (respone != null)
             {
                 return Ok(respone);
@@ -63,13 +60,24 @@ namespace PawnShopBE.Controllers
         [HttpPut("updateLiquidation")]
         public async Task<IActionResult> UpdateLiquidation(LiquidationDTO liquidation)
         {
-            var liquidationUpdate=_mapper.Map<Liquidtation>(liquidation);
+            var liquidationUpdate = _mapper.Map<Liquidtation>(liquidation);
             var respone = await _liquidationService.UpdateLiquidation(liquidationUpdate);
             if (respone != null)
             {
                 return Ok(respone);
             }
             return BadRequest();
+        }
+
+        [HttpGet("detail/{contractId}")]
+        public async Task<IActionResult> GetDetail(int contractId)
+        {
+            var respone = await _liquidationService.GetLiquidationById(contractId);
+            if (respone != null)
+            {
+                return Ok(respone);
+            }
+            return NotFound();
         }
     }
 }

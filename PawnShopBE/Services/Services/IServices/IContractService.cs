@@ -21,10 +21,12 @@ namespace Services.Services.IServices
         Task<DisplayContractDetail> GetContractDetail(int contractId);
         Task<bool> UpdateContract(int contractId, Contract contract);
         Task<bool> DeleteContract(int contractId);
-        Task<bool> UploadContractImg(int contractId, string customerImg, string contractImg);
+        Task<bool> UploadContractImg(int contractId, string? customerImg, string? contractImg);
         Task exporteExcel();
         Task<DisplayContractHomePage> getAllContractHomepage(int branchId);
-        Task<bool> CreateContractExpiration(int contractId);
+        Task<bool> CreateContractExpiration(int contractId, string proofImg);
         Task<DisplayContractInfo> GetContractInfoByContractId(int contractId);
+        public Task<IEnumerable<DisplayNotification>> NotificationList(int branchId);
+
     }
 }

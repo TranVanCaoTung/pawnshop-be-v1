@@ -11,7 +11,7 @@ namespace Services.Services.IServices
     {
         Task<bool> CreateLogContract(LogContract logContract);
         Task<IEnumerable<LogContract>> GetLogContracts(int num);
-        Task<LogContract> LogContractByContractId(int contractId);
-
+        Task<IEnumerable<LogContract>> LogContractsByContractId(int contractId);
+        Task<IEnumerable<LogContract>> LogContractsByBranchId(int branchId);
     }
 }

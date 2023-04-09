@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -22,18 +23,33 @@ namespace Services.Services
     {
         private readonly DbContextClass _context;
         private readonly Appsetting _appsetting;
+        //private UserManager<User> _userManager;
+        //private SignInManager<User> _signInManager;
 
+       
         public AuthenticationService(DbContextClass context, IOptionsMonitor<Appsetting> optionsMonitor)
+            //,UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _context = context;
             _appsetting = optionsMonitor.CurrentValue;
+            //_userManager= userManager;
+            //_signInManager= signInManager;
+        }
+        public async Task<bool> Login(Login user)
+        {
+            //var userName = await _userManager.FindByNameAsync(user.userName);
+            //if(userName == null) return false;
+
+            //var result = await _signInManager.PasswordSignInAsync(userName,user.password,user.remember,true);
+            //if(!result.Succeeded) return false;
+            return true;
         }
         public async Task<IEnumerable<RefeshToken>> getAllToken()
         {
             var result=await _context.Set<RefeshToken>().ToListAsync();
             return result;
         }
-        public async Task<TokenModel> GenerateToken(Admin admin)
+        public async Task<TokenModel> GenerateToken()
         {
             var jwtToken = new JwtSecurityTokenHandler();
             var secretKeyByte = Encoding.UTF8.GetBytes(_appsetting.SecretKey);
@@ -44,7 +60,7 @@ namespace Services.Services
                     new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                 }),
 
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),
                 SecurityAlgorithms.HmacSha512Signature)
             };
@@ -62,12 +78,13 @@ namespace Services.Services
                 IsUsed = false,
                 IsRevoked = false,
                 IssuedAt = DateTime.UtcNow,
-                ExpiredAt = DateTime.UtcNow.AddHours(1),
+                ExpiredAt = DateTime.UtcNow.AddHours(2),
             };
 
             await _context.AddAsync(refeshTokenEntity);
             await _context.SaveChangesAsync();
 
+            //accessToken ="Bearer "+accessToken;
             return new TokenModel
             {
                 AccessToken = accessToken,
@@ -165,8 +182,7 @@ namespace Services.Services
                 await _context.SaveChangesAsync();
 
                 //create new Token
-                var admin = await _context.Admin.SingleOrDefaultAsync(ad => ad.UserName =="Admin");
-                var token = await GenerateToken(admin);
+                var token = await GenerateToken();
 
                 return Response(true, "Renew Token Access", token);
             }

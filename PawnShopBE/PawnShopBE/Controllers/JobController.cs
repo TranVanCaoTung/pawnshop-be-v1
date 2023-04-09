@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
@@ -9,6 +10,7 @@ namespace PawnShopBE.Controllers
 {
     [Route("api/v1/job")]
     [ApiController]
+    [Authorize]
     public class JobController : ControllerBase
     {
         private readonly IJobService _jobService;
@@ -29,17 +31,11 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        private Validation<JobDTO> _validation=new Validation<JobDTO>();
         
         [HttpPost("createJob")]
-        public async Task<IActionResult> CreateJob(JobDTO job)
+        public async Task<IActionResult> CreateJob( JobDTO job)
         {
-            //Check Validation
-            var checkValidation = await _validation.CheckValidation(job);
-            if (checkValidation != null)
-            {
-                return BadRequest(checkValidation);
-            }
+          
             var jobMapper = _mapper.Map<Job>(job);
             var respone = await _jobService.CreateJob(jobMapper);
             if (respone != null)
@@ -50,7 +46,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpDelete("deleteJob/{id}")]
-        public async Task<IActionResult> DeleteJob(int id)
+        public async Task<IActionResult> DeleteJob( int id)
         {
             var respone = await _jobService.DeleteJob(id);
             if (respone != null)
@@ -61,7 +57,7 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPut("updateJob")]
-        public async Task<IActionResult> UpdateJob(JobDTO job)
+        public async Task<IActionResult> UpdateJob( JobDTO job)
         {
             var jobUpdate=_mapper.Map<Job>(job);
             var respone = await _jobService.UpdateJob(jobUpdate);

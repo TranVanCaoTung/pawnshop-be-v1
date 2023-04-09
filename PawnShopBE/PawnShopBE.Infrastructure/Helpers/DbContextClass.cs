@@ -43,6 +43,7 @@ namespace PawnShopBE.Infrastructure.Helpers
         public DbSet<Admin> Admin { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<UserPermissionGroup> UserPermissionGroups { get; set; }
+        public DbSet<Money> Money { get; set; }
         public DbSet<LogContract> LogContracts { get; set; }
         #endregion
 
@@ -182,7 +183,7 @@ namespace PawnShopBE.Infrastructure.Helpers
             modelBuilder.Entity<Admin>(entity =>
             {
                 entity.ToTable("Admin");
-                entity.HasNoKey();
+                entity.HasKey(a => a.UserName);
             });
             modelBuilder.Entity<UserPermissionGroup>(entity =>
             {

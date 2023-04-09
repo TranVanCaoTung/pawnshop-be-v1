@@ -11,8 +11,9 @@ namespace Services.Services.IServices
 {
     public interface IAuthentication
     {
-        Task<TokenModel> GenerateToken(Admin user);
+        Task<TokenModel> GenerateToken();
         Task<ApiRespone> RenewToken(TokenModel tokenModel);
         Task<IEnumerable<RefeshToken>> getAllToken();
+        Task<bool> Login(Login user);
     }
 }
