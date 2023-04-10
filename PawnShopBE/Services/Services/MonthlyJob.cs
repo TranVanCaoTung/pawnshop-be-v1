@@ -42,10 +42,6 @@ namespace Services.Services
             DateTime lastDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month));
 
             var result = 0;
-
-
-
-
             var branchList = await _branchService.GetAllBranch(0);
             foreach (var branch in branchList)
             {

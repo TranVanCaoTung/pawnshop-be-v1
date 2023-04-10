@@ -12,6 +12,7 @@ namespace Services.Services.IServices
         Task<Kyc> CreateKyc(Kyc kyc);
         Task<bool> DeleteKyc(int idKyc);
         Task<bool> UpdateKyc(Kyc kyc);
+        Task<Kyc?> GetKycById(int kycId);
         Task<IEnumerable<Kyc>> GetAllKyc();
     }
 }

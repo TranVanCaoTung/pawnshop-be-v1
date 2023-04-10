@@ -46,8 +46,14 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(monthlyJob)
         .WithIdentity("MonthlyJob-trigger")
-        //This Cron interval can be described as "run every minute" (when second is zero)
-        .WithCronSchedule("0 * * ? * *")
+        // Run at midnight on the 1st of every month
+        .WithCronSchedule("0 0 0 1 * ?")
+    );
+    q.AddTrigger(opts => opts
+        .ForJob(monthlyJob)
+        .WithIdentity("MonthlyJob-trigger")
+        // Run at 9 PM on the last day of every month
+        .WithCronSchedule("0 0 21 L * ?")
     );
 });
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

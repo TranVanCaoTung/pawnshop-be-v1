@@ -11,10 +11,10 @@ namespace PawnShopBE.Core.Validation
 {
     public class MoneyValidation : AbstractValidator<MoneyDTO>
     {
-        public MoneyValidation()
-        {
-            RuleFor(b => b.MoneyInput).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 Tr");
-        }
+        //public MoneyValidation()
+        //{
+        //    RuleFor(b => b.MoneyInput).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 Tr");
+        //}
 
     }
 }

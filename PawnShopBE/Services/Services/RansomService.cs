@@ -57,7 +57,7 @@ namespace Services.Services
                 }
                 // Penalty for pay all before duedate (50% interest paid & contract must > 6 months)
                 // Penalty for contract 6 months
-                else if (contract.Package.Day == 120)
+                else if (contract.Package.Day == 180)
                 {
                     ransom.Penalty = ransom.Payment * (decimal)0.03;
                 }
@@ -71,7 +71,7 @@ namespace Services.Services
                 {
                     ransom.Penalty = ransom.Payment * (decimal)0.05;
                 }
-                ransom.TotalPay = contract.Loan + contract.TotalProfit + ransom.Penalty;
+                ransom.TotalPay = contract.Loan + ransom.Penalty;
 
                 await _unitOfWork.Ransoms.Add(ransom);
 
@@ -97,6 +97,8 @@ namespace Services.Services
                 await _contract.UpdateContract(contract.ContractId, contract);
                 var result = await getAll_field_plus_point(ransom, ransom.Status);
                 ransom.ProofImg = proofImg;
+                ransom.PaidDate = DateTime.Now;
+                ransom.PaidMoney = ransom.TotalPay;
                 _unitOfWork.Ransoms.Update(ransom);
                 if (result)
                 {

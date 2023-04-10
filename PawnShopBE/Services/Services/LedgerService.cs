@@ -75,8 +75,6 @@ namespace Services.Services
                 ledgerUpdate.RecveivedInterest = ledger.RecveivedInterest;
                 ledgerUpdate.Loan = ledger.Loan;
                 ledgerUpdate.Balance = ledger.Balance;
-                //ledgerUpdate.FromDate = ledger.FromDate;
-                //ledgerUpdate.ToDate = ledger.ToDate;
                 ledgerUpdate.Fund = ledger.Fund;
                 ledgerUpdate.Status = ledger.Status;
                 ledgerUpdate.LiquidationMoney = ledger.LiquidationMoney;

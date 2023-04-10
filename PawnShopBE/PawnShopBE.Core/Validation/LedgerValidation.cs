@@ -11,13 +11,13 @@ namespace PawnShopBE.Core.Validation
 {
     public class LedgerValidation : AbstractValidator<LedgerDTO>
     {
-        public LedgerValidation()
-        {
-            RuleFor(b => b.ReceivedPrincipal).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
-            RuleFor(b => b.RecveivedInterest).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
-            RuleFor(b => b.Loan).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
-            RuleFor(b => b.Balance).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
-        }
+        //public LedgerValidation()
+        //{
+        //    RuleFor(b => b.ReceivedPrincipal).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
+        //    RuleFor(b => b.RecveivedInterest).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
+        //    RuleFor(b => b.Loan).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
+        //    RuleFor(b => b.Balance).GreaterThan(100000000).WithMessage("Không nhập số tiền lớn hơn 100 triệu");
+        //}
 
     }
 }

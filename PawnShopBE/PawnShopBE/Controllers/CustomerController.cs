@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -33,7 +34,7 @@ namespace PawnShopBE.Controllers
             {
                 return Ok(respone);
             }
-            return BadRequest();
+            return BadRequest(respone);
         }
 
         [HttpPost("createRelative/{id}")]
@@ -42,9 +43,9 @@ namespace PawnShopBE.Controllers
             var respone = await _customer.createRelative(id,customer);
             if (respone)
             {
-                return Ok();
+                return Ok(respone);
             }
-            return BadRequest();
+            return BadRequest(respone);
         }
 
         [HttpPost("createCustomer")]
@@ -74,7 +75,7 @@ namespace PawnShopBE.Controllers
                 respone = await _customer.getCustomerHaveBranch(respone, listCustomer);
                 return Ok(respone);
             }
-            return NotFound();
+            return NotFound(respone);
         }
         [HttpGet("getAllBlackList/{numPage}")]
         public async Task<IActionResult> GetAllCustomersBlackList(int numPage)
@@ -87,7 +88,7 @@ namespace PawnShopBE.Controllers
                 respone = await _customer.getCustomerHaveBranch(respone, listCustomer);
                 return Ok(respone);
             }
-            return NotFound();
+            return NotFound(respone);
         }
 
         [HttpGet("getById/{id}")]
@@ -96,7 +97,7 @@ namespace PawnShopBE.Controllers
             var customer= await _customer.GetCustomerById(id);
             if(customer == null)
             {
-                return NotFound();
+                return NotFound(customer);
             }
             return Ok(customer);
         }
@@ -107,7 +108,7 @@ namespace PawnShopBE.Controllers
             var listCustomer=await _customer.DeleteCustomer(id);
             if (!listCustomer)
             {
-                return BadRequest();
+                return BadRequest(listCustomer);
             }
             return Ok(listCustomer);
         }
@@ -115,16 +116,13 @@ namespace PawnShopBE.Controllers
         [HttpPut("updateCustomer")]
         public async Task<IActionResult> UpdateCustomer( Customer customer)
         {
-            if (customer != null)
-            {
+
                     var respone = await _customer.UpdateCustomer(customer);
                     if (respone)
                     {
                         return Ok(respone);
                     }
-                    return BadRequest();
-            }
-                return BadRequest();
+                    return BadRequest(respone);
         }
 
         [HttpGet("getByCCCD/{cccd}")]
@@ -133,7 +131,7 @@ namespace PawnShopBE.Controllers
             var customer = await _customer.getCustomerByCCCD(cccd);
             if (customer == null)
             {
-                return NotFound();
+                return NotFound(customer);
             }
             return Ok(customer);
         }

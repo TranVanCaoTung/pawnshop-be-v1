@@ -19,7 +19,6 @@ namespace PawnShopBE.Controllers
             _contractService = contractService;
             _mapper = mapper;
         }
-
         [HttpGet("notificationList/{branchId}")]
         public async Task<IActionResult> getListContractToday(int branchId)
         {

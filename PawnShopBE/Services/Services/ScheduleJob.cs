@@ -81,7 +81,7 @@ namespace Services.Services
                 TimeSpan timeDifference = DateTime.Now - contract.ContractEndDate;
                 double totalDays = timeDifference.TotalDays;
 
-                decimal paymentFee = (contract.Loan + (contract.Loan * package.PackageInterest)) * (1 + package.PackageInterest);
+                decimal paymentFee = (contract.Loan * (1 + package.PackageInterest)) * package.PackageInterest;
 
                 // Penalty for < 1 month and > 3 month
                 if (package.PunishDay2 != 0)
@@ -94,7 +94,7 @@ namespace Services.Services
                     // Overdue punish day 2
                     if (totalDays == (double)package.PunishDay2 || totalDays < (double)package.LiquitationDay)
                     {
-                        ransom.Penalty = paymentFee * (1 + package.PackageInterest);
+                        ransom.Penalty = paymentFee * 2;
                     }
                 }
                 // Penalty between 1 month to 3 month
@@ -136,7 +136,7 @@ namespace Services.Services
                                                        ContractId = contract.ContractId,
                                                        UserName = user.FullName,
                                                        CustomerName = customer.FullName,
-                                                   };
+                                                   }; 
                 var logContract = new LogContract();
                 foreach (var row in contractJoinUserJoinCustomer)
                 {
