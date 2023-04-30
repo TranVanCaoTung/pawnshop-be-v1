@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using PawnShopBE.Core.Data;
 using PawnShopBE.Core.Models;
@@ -49,47 +50,76 @@ namespace Services.Services
             var result=await _context.Set<RefeshToken>().ToListAsync();
             return result;
         }
-        public async Task<TokenModel> GenerateToken()
+        public async Task<TokenModel> GenerateToken(User user,Admin admin)
         {
             var jwtToken = new JwtSecurityTokenHandler();
             var secretKeyByte = Encoding.UTF8.GetBytes(_appsetting.SecretKey);
-            var tokenDescription = new SecurityTokenDescriptor
+            SecurityTokenDescriptor tokenDescription;
+            if (user != null)
             {
-                Subject = new ClaimsIdentity(new[]
+                //token for user
+               tokenDescription = new SecurityTokenDescriptor
                 {
+                    Subject = new ClaimsIdentity(new[]
+                    {
                     new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+                    new Claim("Email",user.Email),
+                    new Claim("Name",user.FullName),
+                    new Claim("BranchId",user.BranchId.ToString()),
+                    new Claim("UserId",user.UserId.ToString())
                 }),
 
-                Expires = DateTime.UtcNow.AddHours(2),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),
-                SecurityAlgorithms.HmacSha512Signature)
-            };
+                    Expires = DateTime.UtcNow.AddHours(2),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),
+                    SecurityAlgorithms.HmacSha512Signature)
+                };
+                
+            }
+            else
+            {
+                var branchList = await _context.Branch.ToListAsync();
+                var firstBranch = branchList.FirstOrDefault();
+                //token for admin
+                tokenDescription = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new[]
+                    {
+                    new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+                    new Claim("Email",admin.Email),
+                    new Claim("Name",admin.UserName),
+                    new Claim("BranchId",firstBranch.BranchId.ToString()),
+                    new Claim("UserId",admin.Id.ToString())
+                }),
+
+                    Expires = DateTime.UtcNow.AddHours(2),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),
+                    SecurityAlgorithms.HmacSha512Signature)
+                };
+               
+            }
             //create Token
             var token = jwtToken.CreateToken(tokenDescription);
             var accessToken = jwtToken.WriteToken(token);
-            var resfulToken = GenerateRefeshToken();
-
-            //save data
-            var refeshTokenEntity = new RefeshToken
-            {
-                Id = Guid.NewGuid(),
-                JwtID = token.Id,
-                Token = resfulToken,
-                IsUsed = false,
-                IsRevoked = false,
-                IssuedAt = DateTime.UtcNow,
-                ExpiredAt = DateTime.UtcNow.AddHours(2),
-            };
-
-            await _context.AddAsync(refeshTokenEntity);
-            await _context.SaveChangesAsync();
-
-            //accessToken ="Bearer "+accessToken;
             return new TokenModel
             {
-                AccessToken = accessToken,
-                RefeshToken = resfulToken
+                AccessToken = accessToken
             };
+            //var resfulToken = GenerateRefeshToken();
+            //save data
+            //var refeshTokenEntity = new RefeshToken
+            //{
+            //    Id = Guid.NewGuid(),
+            //    JwtID = token.Id,
+            //    Token = resfulToken,
+            //    IsUsed = false,
+            //    IsRevoked = false,
+            //    IssuedAt = DateTime.UtcNow,
+            //    ExpiredAt = DateTime.UtcNow.AddHours(2),
+            //};
+
+            //await _context.AddAsync(refeshTokenEntity);
+            //await _context.SaveChangesAsync();
+            //accessToken ="Bearer "+accessToken;
         }
         private string GenerateRefeshToken()
         {
@@ -101,96 +131,114 @@ namespace Services.Services
                 return token;
             }
         }
-
-        //Renew AccessToken
-        public async Task<ApiRespone> RenewToken(TokenModel tokenModel)
+        //giải mã token
+        public ClaimsPrincipal EncrypToken(string token)
         {
-            var jwtToken = new JwtSecurityTokenHandler();
-            var secretKeyByte = Encoding.UTF8.GetBytes(_appsetting.SecretKey);
-            var tokenValidateParam = new TokenValidationParameters
+            var tokenHandler =new JwtSecurityTokenHandler();
+            //Decode JWT
+            var claims = tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
-                // tự cấp token
-                ValidateIssuer = false,
-                ValidateAudience = false,
-
-                //ký vào token
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(secretKeyByte),
-                ClockSkew = TimeSpan.Zero,
-
-                //ko check Token hết hạn
-                ValidateLifetime = false
-            };
-
-            try
-            {
-                //check 1: Accesstoken valid format
-                var tokenInVerification = jwtToken.ValidateToken(tokenModel.AccessToken,
-                    tokenValidateParam, out var validatedToken);
-
-                //check 2: check thuat toan
-                if (validatedToken is JwtSecurityToken jwtSecurity)
-                {
-                    var result = jwtSecurity.Header.Alg.Equals(SecurityAlgorithms.HmacSha512,
-                        StringComparison.InvariantCultureIgnoreCase);
-                    if (!result)
-                    {
-                        return Response(false, "InvalidToken", null);
-                    }
-                }
-
-                //check 3 check time expire
-                var utcExpireDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(
-                    x => x.Type == JwtRegisteredClaimNames.Exp).Value);
-                var expireDate = ConverUrnixTimeToDateTime(utcExpireDate);
-                if (expireDate > DateTime.UtcNow)
-                {
-                    return Response(false, "Access token has not yet expired", null);
-                }
-
-
-                // check 4: refeshToken exist in db
-                var storedToken = _context.RefeshTokens.FirstOrDefault(x => x.Token
-                == tokenModel.RefeshToken);
-                if (storedToken == null)
-                {
-                    return Response(false, "Refesh does not exits", null);
-                }
-
-                //check 5: refeshToken is used/revoked
-                if (storedToken.IsUsed)
-                {
-                    return Response(false, "RefeshToken has Used", null);
-                }
-                if (storedToken.IsRevoked)
-                {
-                    return Response(false, "RefeshToken has Revoked", null);
-                }
-
-                //check 6: Access Token Id == jwtId in RefeshToken
-                var jti = tokenInVerification.Claims.FirstOrDefault(x => x.Type
-                == JwtRegisteredClaimNames.Jti).Value;
-                if (storedToken.JwtID != jti)
-                {
-                    return Response(false, "Token doesn't match", null);
-                }
-
-                //Update token is used
-                storedToken.IsRevoked = true;
-                storedToken.IsUsed = true;
-                _context.Update(storedToken);
-                await _context.SaveChangesAsync();
-
-                //create new Token
-                var token = await GenerateToken();
-
-                return Response(true, "Renew Token Access", token);
-            }
-            catch
-            {
-                return Response(false, "Something Went Wrong", null);
-            }
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appsetting.SecretKey)),
+                ValidateIssuer=false,
+                ValidateAudience=false,
+                ClockSkew=TimeSpan.Zero
+            },out SecurityToken validatedToken);
+            //Access the claim 
+            return claims;
         }
+
+        #region Renew AccessToken
+        //public async Task<ApiRespone> RenewToken(TokenModel tokenModel)
+        //{
+        //    var jwtToken = new JwtSecurityTokenHandler();
+        //    var secretKeyByte = Encoding.UTF8.GetBytes(_appsetting.SecretKey);
+        //    var tokenValidateParam = new TokenValidationParameters
+        //    {
+        //        // tự cấp token
+        //        ValidateIssuer = false,
+        //        ValidateAudience = false,
+
+        //        //ký vào token
+        //        ValidateIssuerSigningKey = true,
+        //        IssuerSigningKey = new SymmetricSecurityKey(secretKeyByte),
+        //        ClockSkew = TimeSpan.Zero,
+
+        //        //ko check Token hết hạn
+        //        ValidateLifetime = false
+        //    };
+
+        //    try
+        //    {
+        //        //check 1: Accesstoken valid format
+        //        var tokenInVerification = jwtToken.ValidateToken(tokenModel.AccessToken,
+        //            tokenValidateParam, out var validatedToken);
+
+        //        //check 2: check thuat toan
+        //        if (validatedToken is JwtSecurityToken jwtSecurity)
+        //        {
+        //            var result = jwtSecurity.Header.Alg.Equals(SecurityAlgorithms.HmacSha512,
+        //                StringComparison.InvariantCultureIgnoreCase);
+        //            if (!result)
+        //            {
+        //                return Response(false, "InvalidToken", null);
+        //            }
+        //        }
+
+        //        //check 3 check time expire
+        //        var utcExpireDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(
+        //            x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+        //        var expireDate = ConverUrnixTimeToDateTime(utcExpireDate);
+        //        if (expireDate > DateTime.UtcNow)
+        //        {
+        //            return Response(false, "Access token has not yet expired", null);
+        //        }
+
+
+        //        // check 4: refeshToken exist in db
+        //        var storedToken = _context.RefeshTokens.FirstOrDefault(x => x.Token
+        //        == tokenModel.RefeshToken);
+        //        if (storedToken == null)
+        //        {
+        //            return Response(false, "Refesh does not exits", null);
+        //        }
+
+        //        //check 5: refeshToken is used/revoked
+        //        if (storedToken.IsUsed)
+        //        {
+        //            return Response(false, "RefeshToken has Used", null);
+        //        }
+        //        if (storedToken.IsRevoked)
+        //        {
+        //            return Response(false, "RefeshToken has Revoked", null);
+        //        }
+
+        //        //check 6: Access Token Id == jwtId in RefeshToken
+        //        var jti = tokenInVerification.Claims.FirstOrDefault(x => x.Type
+        //        == JwtRegisteredClaimNames.Jti).Value;
+        //        if (storedToken.JwtID != jti)
+        //        {
+        //            return Response(false, "Token doesn't match", null);
+        //        }
+
+        //        //Update token is used
+        //        storedToken.IsRevoked = true;
+        //        storedToken.IsUsed = true;
+        //        _context.Update(storedToken);
+        //        await _context.SaveChangesAsync();
+
+        //        var user=modelt
+        //        //create new Token
+        //        var token = await GenerateToken();
+
+        //        return Response(true, "Renew Token Access", token);
+        //    }
+        //    catch
+        //    {
+        //        return Response(false, "Something Went Wrong", null);
+        //    }
+        //}
+        #endregion Renew AccessToken
         private DateTime ConverUrnixTimeToDateTime(long utcExpireDate)
         {
             var dateTimeInterval = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);

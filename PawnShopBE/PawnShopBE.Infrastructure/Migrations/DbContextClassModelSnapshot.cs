@@ -24,8 +24,9 @@ namespace PawnShopBE.Infrastructure.Migrations
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Admin", b =>
                 {
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -35,7 +36,11 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("UserName");
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.ToTable("Admin", (string)null);
                 });
@@ -248,6 +253,9 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Property<int>("Point")
                         .HasColumnType("int");
 
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -332,6 +340,31 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.ToTable("DependentPeople", (string)null);
                 });
 
+            modelBuilder.Entity("PawnShopBE.Core.Models.DiaryImg", b =>
+                {
+                    b.Property<int>("DiaryImgId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DiaryImgId"));
+
+                    b.Property<int>("InterestDiaryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PaidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProofImg")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("DiaryImgId");
+
+                    b.HasIndex("InterestDiaryId");
+
+                    b.ToTable("DiaryImg", (string)null);
+                });
+
             modelBuilder.Entity("PawnShopBE.Core.Models.InterestDiary", b =>
                 {
                     b.Property<int?>("InterestDiaryId")
@@ -366,9 +399,6 @@ namespace PawnShopBE.Infrastructure.Migrations
 
                     b.Property<decimal>("Penalty")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ProofImg")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -449,32 +479,20 @@ namespace PawnShopBE.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LedgerId"));
 
-                    b.Property<long>("Balance")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Fund")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("LiquidationMoney")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("Loan")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("ReceivedPrincipal")
+                    b.Property<decimal>("Profit")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("RecveivedInterest")
+                    b.Property<decimal>("Revenue")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("ToDate")
                         .HasColumnType("datetime2");
@@ -512,6 +530,41 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Liquidtation", (string)null);
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.LogAsset", b =>
+                {
+                    b.Property<int>("logAssetId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("logAssetId"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExportImg")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImportImg")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WareHouseName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("contractAssetId")
+                        .HasColumnType("int");
+
+                    b.HasKey("logAssetId");
+
+                    b.HasIndex("contractAssetId");
+
+                    b.ToTable("LogAsset", (string)null);
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.LogContract", b =>
@@ -555,38 +608,30 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.ToTable("LogContract", (string)null);
                 });
 
-            modelBuilder.Entity("PawnShopBE.Core.Models.Money", b =>
+            modelBuilder.Entity("PawnShopBE.Core.Models.Notification", b =>
                 {
-                    b.Property<int>("MoneyId")
+                    b.Property<int>("NotificationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MoneyId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
 
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("DateCreate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("Fund")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MoneyInput")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserName")
+                    b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("MoneyId");
+                    b.Property<string>("Header")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("NotificationId");
 
                     b.HasIndex("BranchId");
 
-                    b.ToTable("Money");
+                    b.ToTable("Notification", (string)null);
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Package", b =>
@@ -598,6 +643,9 @@ namespace PawnShopBE.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PackageId"));
 
                     b.Property<int>("Day")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InterestDiaryPenalty")
                         .HasColumnType("int");
 
                     b.Property<int>("Limitation")
@@ -620,6 +668,9 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("PunishDay2")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RansomPenalty")
                         .HasColumnType("int");
 
                     b.HasKey("PackageId");
@@ -967,6 +1018,17 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("PawnShopBE.Core.Models.DiaryImg", b =>
+                {
+                    b.HasOne("PawnShopBE.Core.Models.InterestDiary", "InterestDiary")
+                        .WithMany("DiaryImgs")
+                        .HasForeignKey("InterestDiaryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InterestDiary");
+                });
+
             modelBuilder.Entity("PawnShopBE.Core.Models.InterestDiary", b =>
                 {
                     b.HasOne("PawnShopBE.Core.Models.Contract", "Contract")
@@ -1011,6 +1073,17 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("Contract");
                 });
 
+            modelBuilder.Entity("PawnShopBE.Core.Models.LogAsset", b =>
+                {
+                    b.HasOne("PawnShopBE.Core.Models.ContractAsset", "ContractAsset")
+                        .WithMany("LogAssets")
+                        .HasForeignKey("contractAssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContractAsset");
+                });
+
             modelBuilder.Entity("PawnShopBE.Core.Models.LogContract", b =>
                 {
                     b.HasOne("PawnShopBE.Core.Models.Contract", "Contract")
@@ -1022,10 +1095,10 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("Contract");
                 });
 
-            modelBuilder.Entity("PawnShopBE.Core.Models.Money", b =>
+            modelBuilder.Entity("PawnShopBE.Core.Models.Notification", b =>
                 {
                     b.HasOne("PawnShopBE.Core.Models.Branch", "Branch")
-                        .WithMany()
+                        .WithMany("Notifications")
                         .HasForeignKey("BranchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1086,6 +1159,8 @@ namespace PawnShopBE.Infrastructure.Migrations
 
                     b.Navigation("Ledgers");
 
+                    b.Navigation("Notifications");
+
                     b.Navigation("Users");
                 });
 
@@ -1103,6 +1178,8 @@ namespace PawnShopBE.Infrastructure.Migrations
             modelBuilder.Entity("PawnShopBE.Core.Models.ContractAsset", b =>
                 {
                     b.Navigation("Contracts");
+
+                    b.Navigation("LogAssets");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Customer", b =>
@@ -1114,6 +1191,11 @@ namespace PawnShopBE.Infrastructure.Migrations
                     b.Navigation("DependentPeople");
 
                     b.Navigation("Jobs");
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.InterestDiary", b =>
+                {
+                    b.Navigation("DiaryImgs");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Kyc", b =>

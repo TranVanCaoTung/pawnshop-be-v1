@@ -32,10 +32,10 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-       
-       
+
+
         [HttpPost("createUser")]
-        public async Task<IActionResult> CreateUser( UserDTO request)
+        public async Task<IActionResult> CreateUser(UserDTO request)
         {
             var user = _mapper.Map<User>(request);
             var response = await _userService.CreateUser(user);
@@ -50,15 +50,8 @@ namespace PawnShopBE.Controllers
             }
         }
 
-        //[HttpPost("admin")]
-        //public async Task<IActionResult> CreateAdmin(Admin admin)
-        //{           
-        //    var response = await _userService.CreateAdmin(admin);
-        //    return (response) ? Ok(response) : BadRequest();
-        //}
-
         [HttpGet("getAll/{numPage}")]
-        public async Task<IActionResult> getUserList( int numPage)
+        public async Task<IActionResult> getUserList(int numPage)
         {
             var userList = await _userService.GetAllUsers(numPage);
             if (userList == null)
@@ -69,25 +62,18 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpGet("getUserById/{userId:guid}")]
-        public async Task<IActionResult> GetUserById( Guid userId)
+        public async Task<IActionResult> GetUserById(Guid userId)
         {
             var user = await _userService.GetUserById(userId);
 
-            if (user != null)
-            {
-                return Ok(user);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            return (user != null) ? Ok(user) : BadRequest();
         }
-      
+
         [HttpPut("updateUser")]
-        public async Task<IActionResult> UpdateUser(  UserDTO request)
+        public async Task<IActionResult> UpdateUser(UserDTO request)
         {
-          
-            if (request != null )
+
+            if (request != null)
             {
                 var user = _mapper.Map<User>(request);
                 var response = await _userService.UpdateUser(user);
@@ -102,9 +88,9 @@ namespace PawnShopBE.Controllers
                 return BadRequest();
             }
         }
-        
+
         [HttpDelete("deleteUser/{userId:guid}")]
-        public async Task<IActionResult> DeleteUser( Guid userId)
+        public async Task<IActionResult> DeleteUser(Guid userId)
         {
             var isUserCreated = await _userService.DeleteUser(userId);
 
@@ -117,6 +103,6 @@ namespace PawnShopBE.Controllers
                 return BadRequest();
             }
         }
-    
+
     }
 }

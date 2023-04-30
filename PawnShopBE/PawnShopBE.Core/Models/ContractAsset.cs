@@ -22,9 +22,11 @@ namespace PawnShopBE.Core.Models
         public virtual Warehouse Warehouse { get; set; }
         public virtual PawnableProduct PawnableProduct { get; set; }
         public ICollection<Contract> Contracts { get; set; }
+        public ICollection<LogAsset> LogAssets { get; set; }
         public ContractAsset()
         {
             Contracts = new List<Contract>();
+            LogAssets = new List<LogAsset>();
         }
         
     }

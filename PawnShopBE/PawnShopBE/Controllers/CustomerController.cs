@@ -19,17 +19,18 @@ namespace PawnShopBE.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customer;
-       
+
         private readonly IMapper _mapper;
 
-        public CustomerController(ICustomerService customer, IMapper mapper) {
+        public CustomerController(ICustomerService customer, IMapper mapper)
+        {
             _customer = customer;
             _mapper = mapper;
         }
         [HttpGet("getRelative/{id}")]
-        public async Task<IActionResult> getCustomerRelative( Guid id)
+        public async Task<IActionResult> getCustomerRelative(Guid id)
         {
-            var respone= await _customer.getRelative(id);
+            var respone = await _customer.getRelative(id);
             if (respone != null)
             {
                 return Ok(respone);
@@ -38,9 +39,9 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPost("createRelative/{id}")]
-        public async Task<IActionResult> createCustomerRelative( Guid id, Relative_Job_DependentDTO customer)
+        public async Task<IActionResult> createCustomerRelative(Guid id, Relative_Job_DependentDTO customer)
         {
-            var respone = await _customer.createRelative(id,customer);
+            var respone = await _customer.createRelative(id, customer);
             if (respone)
             {
                 return Ok(respone);
@@ -49,14 +50,14 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPost("createCustomer")]
-        public async Task<IActionResult> CreateCustomer( CustomerDTO customer)
+        public async Task<IActionResult> CreateCustomer(CustomerDTO customer)
         {
-         
+
             //get Kyc id
             customer.KycId = await _customer.createKyc(customer);
             //create Customer
-            var customerMap= _mapper.Map<Customer>(customer);
-            var respone=await _customer.CreateCustomer(customerMap);
+            var customerMap = _mapper.Map<Customer>(customer);
+            var respone = await _customer.CreateCustomer(customerMap);
             if (respone)
             {
                 return Ok(respone);
@@ -94,8 +95,8 @@ namespace PawnShopBE.Controllers
         [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetCustomerById(Guid id)
         {
-            var customer= await _customer.GetCustomerById(id);
-            if(customer == null)
+            var customer = await _customer.GetCustomerById(id);
+            if (customer == null)
             {
                 return NotFound(customer);
             }
@@ -105,7 +106,7 @@ namespace PawnShopBE.Controllers
         [HttpDelete("deleteCustomer/{id}")]
         public async Task<IActionResult> DeleteCustomer(Guid id)
         {
-            var listCustomer=await _customer.DeleteCustomer(id);
+            var listCustomer = await _customer.DeleteCustomer(id);
             if (!listCustomer)
             {
                 return BadRequest(listCustomer);
@@ -114,15 +115,14 @@ namespace PawnShopBE.Controllers
         }
 
         [HttpPut("updateCustomer")]
-        public async Task<IActionResult> UpdateCustomer( Customer customer)
+        public async Task<IActionResult> UpdateCustomer(Customer customer)
         {
-
-                    var respone = await _customer.UpdateCustomer(customer);
-                    if (respone)
-                    {
-                        return Ok(respone);
-                    }
-                    return BadRequest(respone);
+            var respone = await _customer.UpdateCustomer(customer);
+            if (respone)
+            {
+                return Ok(respone);
+            }
+            return BadRequest(respone);
         }
 
         [HttpGet("getByCCCD/{cccd}")]

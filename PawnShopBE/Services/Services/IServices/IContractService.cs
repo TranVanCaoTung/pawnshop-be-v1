@@ -14,7 +14,7 @@ namespace Services.Services.IServices
 
         Task<IEnumerable<Contract>> GetAllContracts(int num);
 
-        Task<ICollection<DisplayContractList>> GetAllDisplayContracts(int num);
+        Task<ICollection<DisplayContractList>> GetAllDisplayContracts(int num, int branchId);
         Task<IEnumerable<Contract>> GetAllContracts();
         Task<Contract> GetContractById(int contractId);
         Task<Contract> GetContractByContractCode(string contractCode);
@@ -22,7 +22,7 @@ namespace Services.Services.IServices
         Task<bool> UpdateContract(int contractId, Contract contract);
         Task<bool> DeleteContract(int contractId);
         Task<bool> UploadContractImg(int contractId, string? customerImg, string? contractImg);
-        Task exporteExcel();
+        Task exporteExcel(int branchId);
         Task<DisplayContractHomePage> getAllContractHomepage(int branchId);
         Task<bool> CreateContractExpiration(int contractId, string proofImg);
         Task<DisplayContractInfo> GetContractInfoByContractId(int contractId);

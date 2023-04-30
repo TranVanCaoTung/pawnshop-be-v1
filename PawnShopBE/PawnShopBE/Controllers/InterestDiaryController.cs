@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Core.Requests;
 using Services.Services;
 using Services.Services.IServices;
 
@@ -22,7 +23,7 @@ namespace PawnShopBE.Controllers
             _mapper=mapper;
         }
 
-        [HttpGet("getInterestDiariesByContractId{contractId}")]
+        [HttpGet("getInterestDiariesByContractId/{contractId}")]
         public async Task<IActionResult> GetInterestDiariesByContractId(int contractId)
         {
             var respone = await _interestDiaryService.GetInteresDiariesByContractId(contractId);
@@ -33,21 +34,12 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        //[HttpDelete("deleteInterestDiary/{id}")]
-        //public async Task<IActionResult> DeleteInterestDiary(int id)
-        //{
-        //    var respone = await _interestDiaryService.DeleteInteresDiary(id);
-        //    if (respone != null)
-        //    {
-        //        return Ok(respone);
-        //    }
-        //    return BadRequest();
-        //}
-
         [HttpPut("updateInterestDiary/{id}")]
-        public async Task<IActionResult> UpdateInterestDiary(int id, decimal paidMoney)
+        public async Task<IActionResult> UpdateInterestDiary(int id, UpdateInterestDiaryRequest updateInterestDiaryRequest)
         {
-            var respone = await _interestDiaryService.UpdateInterestDiary(id, paidMoney);
+            var paidMoney = updateInterestDiaryRequest.PaidMoney;
+            var proofImg = updateInterestDiaryRequest.ProofImg;
+            var respone = await _interestDiaryService.UpdateInterestDiary(id, paidMoney, proofImg);
             if (respone != null)
             {
                 return Ok(respone);

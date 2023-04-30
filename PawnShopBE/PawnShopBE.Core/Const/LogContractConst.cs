@@ -11,7 +11,7 @@ namespace PawnShopBE.Core.Const
         CREATE_CONTRACT = 1,
         INTEREST_NOT_PAID = 2,
         INTEREST_PAID = 3,
-        CLOSE_CONTRACT = 4
-        
+        CLOSE_CONTRACT = 4,
+        INTEREST_DEBT = 5
     }
 }

@@ -65,7 +65,8 @@ namespace Services.Services
 
         public async Task<ContractAsset> GetContractAssetById(int contractAssetId)
         {
-            throw new NotImplementedException();
+            var result = await _unitOfWork.ContractAssets.GetById(contractAssetId);
+            return result;
         }
 
         public async Task<bool> UpdateContractAsset(ContractAsset contractAsset)
@@ -79,6 +80,15 @@ namespace Services.Services
                 var result = _unitOfWork.Save();
                 if (result > 0)
                 {
+                    //var logAsset = new LogAsset();
+                    //logAsset.contractAssetId = contractAssetUpdate.ContractAssetId;
+                    //logAsset.Description = null;
+                    //logAsset.ImportImg = null;
+                    //logAsset.ExportImg = null;
+                    //logAsset.UserName = GetUser(contract.UserId);
+                    //logAsset.WareHouseName =  .WarehouseName;
+                    //await _logAssetService.CreateLogAsset(logAsset);
+
                     return true;
                 }
             }

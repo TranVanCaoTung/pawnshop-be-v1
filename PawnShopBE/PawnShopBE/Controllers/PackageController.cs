@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PawnShopBE.Core.DTOs;
+using PawnShopBE.Core.Models;
 using Services.Services;
 using Services.Services.IServices;
 
@@ -19,19 +22,13 @@ namespace PawnShopBE.Controllers
         }
 
 
-        [HttpGet("getPackageById/{id}")]
+        [HttpGet("getPackageById/{packageId}")]
         public async Task<IActionResult> GetPackageById(int packageId)
         {
             var package = await _packageService.GetPackageById(packageId);
 
-            if (package != null)
-            {
-                return Ok(package);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            return (package != null) ? Ok(package) : NotFound(package);
+                
         }
 
         [HttpGet("getAll/{numPage}")]
@@ -40,9 +37,27 @@ namespace PawnShopBE.Controllers
             var packageList = await _packageService.GetAllPackages(numPage);
             if (packageList == null)
             {
-                return NotFound();
+                return NotFound(packageList);
             }
             return Ok(packageList);
+        }
+
+        [HttpPut("updatePackage")]
+        public async Task<IActionResult> UpdatePackage(Package package)
+        {
+            var updatePackage = await _packageService.UpdatePackage(package);
+            if (updatePackage)
+            {
+                return Ok(updatePackage);
+            }
+            return BadRequest(updatePackage);
+        }
+
+        [HttpPost("createPackage")]
+        public async Task<IActionResult> CreatePackage(Package package)
+        {
+            var result = await _packageService.CreatePackage(package);
+            return (result) ? Ok(result) : BadRequest(result);
         }
     }
 }

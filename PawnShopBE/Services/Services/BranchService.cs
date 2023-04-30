@@ -1,4 +1,5 @@
-﻿using PawnShopBE.Core.Display;
+﻿using PawnShopBE.Core.Const;
+using PawnShopBE.Core.Display;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
@@ -19,100 +20,94 @@ namespace Services.Services
         private IContractService _contract;
         private IInteresDiaryService _diary;
         private ILedgerService _ledgerService;
+        private IServiceProvider _serviceProvider;
 
         public BranchService(IUnitOfWork unitOfWork, IContractService contract
-           , ILedgerService ledger, IInteresDiaryService diary)
+           , ILedgerService ledger, IInteresDiaryService diary, IServiceProvider serviceProvider)
         {
             _unitOfWork = unitOfWork;
             _contract = contract;
             _ledgerService = ledger;
             _diary = diary;
+            _serviceProvider = serviceProvider;
         }
-        public async Task<DisplayBranchDetail> getDisplayBranchDetail(DisplayBranchDetail branchDetail)
+        public async Task<DisplayBranchDetail> getDisplayBranchDetail(int branchId)
         {
-            //get all list
-            var _ledgerList = await _ledgerService.GetLedger();
-            var _contractList = await _contract.GetAllContracts(0);
-            var _diaryList = await _diary.GetInteresDiary();
-            //get branch id
-            var branchID = branchDetail.branchId;
-            //get ledger have branchID
-            var ledger = from l in _ledgerList where l.BranchId == branchID select l;
-            var contract = from c in _contractList where c.BranchId == branchID select c;
-            //get contract id
-            var contractId = getContractId(contract);
-            //get diary have contractId
-            var diary = from d in _diaryList where d.ContractId == contractId select d;
+            var branch = await _unitOfWork.Branches.GetById(branchId);
 
-            foreach (var x in ledger)
+            if (branch == null)
             {
-                //lãi đã thu
-                branchDetail.recveivedInterest += x.RecveivedInterest;
-                //tiền cho vay
-                branchDetail.loanLedger += x.Loan;
-                //quỹ tiền mặt   
-                branchDetail.balance += x.Balance;
+                return null;
             }
+            // Get all ledger equal to branchId
+            var ledgerList = await _ledgerService.GetLedgersByBranchId(branchId);         
+            // Get all contract that not close and equal to branchId to get total loan
+            var contractList = await _contract.GetAllContracts();
+            var openContract = from c in contractList
+                               where c.Status != (int)ContractConst.CLOSE && c.BranchId == branch.BranchId
+                               select c; 
 
-            foreach (var x in contract)
-            {
-                //tiền đang cho vay
-                branchDetail.loanContract += x.Loan;
-                //lãi dự kiến
-                branchDetail.totalProfit += x.TotalProfit;
-            }
-            //số hợp đồng
-            branchDetail.numberContract = _contractList.Count();
-            //số họp đồng mở
-            branchDetail.openContract = getNumOpenCloseContract(1, _contractList);
-            //số hợp đồng đóng
-            branchDetail.closeContract = getNumOpenCloseContract(4, _contractList);
-
-            foreach (var x in diary)
-            {
-                //tiền khách nợ
-                branchDetail.debtCustomers += x.TotalPay - x.PaidMoney;
-            }
-            return branchDetail;
+            var displayBranchDetail = new DisplayBranchDetail();
+            displayBranchDetail.BranchId = branch.BranchId;
+            displayBranchDetail.BranchName = branch.BranchName;
+            displayBranchDetail.Loan = (long) openContract.Sum(c => c.Loan);
+            displayBranchDetail.TotalContracts = contractList.Where(c => c.BranchId == branchId).Count();
+            displayBranchDetail.OpenContract = openContract.Count();
+            displayBranchDetail.CloseContract = displayBranchDetail.TotalContracts - displayBranchDetail.OpenContract;
+            displayBranchDetail.Profit = (long) ledgerList.Sum(l => l.Profit);
+            displayBranchDetail.CurrentFund =(long) (branch.Fund - openContract.Sum(c =>  c.Loan));
+            return displayBranchDetail;
         }
 
-        private int getNumOpenCloseContract(int status, IEnumerable<Contract> contractList)
+        public async Task<DisplayBranchDetail> getDisplayBranchYearDetail(int branchId, int year)
         {
-            switch (status)
+            var branch = await _unitOfWork.Branches.GetById(branchId);
+
+            if (branch == null)
             {
-                case 1:
-                    var listOpen = from c in contractList where c.Status == status select c;
-                    var open = listOpen.Count();
-                    return open;
-                case 4:
-                    var listClose = from c in contractList where c.Status == status select c;
-                    var close = listClose.Count();
-                    return close;
+                return null;
             }
-            return 0;
+            // Get all ledger equal to branchId and year
+            var ledgerList = await _ledgerService.GetLedgersByBranchId(branchId, year);
+            // Get all contract that not close and equal to branchId to get total loan
+            var contractList = await _contract.GetAllContracts();
+            var openContract = from c in contractList
+                               where c.Status != (int)ContractConst.CLOSE && c.BranchId == branch.BranchId && c.ContractStartDate.Year == year
+                               select c;
+
+            var displayBranchDetail = new DisplayBranchDetail();
+            displayBranchDetail.BranchId = branch.BranchId;
+            displayBranchDetail.BranchName = branch.BranchName;
+            displayBranchDetail.Loan = (long)openContract.Sum(c => c.Loan);
+            displayBranchDetail.TotalContracts = contractList.Where(c => c.BranchId == branchId).Count();
+            displayBranchDetail.OpenContract = openContract.Count();
+            displayBranchDetail.CloseContract = displayBranchDetail.TotalContracts - displayBranchDetail.OpenContract;
+            displayBranchDetail.Profit = (long)ledgerList.Sum(l => l.Profit);
+            displayBranchDetail.CurrentFund = (long)(branch.Fund - openContract.Sum(c => c.Loan));
+            return displayBranchDetail;
         }
-        private int getContractId(IEnumerable<Contract> contract)
+
+        public async Task<IEnumerable<DisplayBranch>> getDisplayBranch()
         {
-            var contractId = (from c in contract select c.ContractId).FirstOrDefault();
-            return contractId;
-        }
-        public async Task<IEnumerable<DisplayBranch>> getDisplayBranch(IEnumerable<DisplayBranch> branchList)
-        {
-            //get list Ledger
-            var _ledgerList = await _ledgerService.GetLedger();
-            foreach (var branch in branchList)
+            var displayBranchList = new List<DisplayBranch>();
+            var branchList = await GetAllBranch(0);
+            foreach(var branch in branchList)
             {
-                var branchId = branch.branchId;
-                // ger ledger khi branch id = nhau
-                var ledger = from l in _ledgerList where l.BranchId == branchId select l;
-                foreach (var l in ledger)
-                {
-                    branch.recveivedInterest = l.RecveivedInterest;
-                    branch.loan = l.Loan;
-                    branch.balance = l.Balance;
-                }
-            }
-            return branchList;
+                // Get all contract that not close and equal to branchid to get total loan
+                var contractList = await _contract.GetAllContracts();
+                var openContract = from c in contractList 
+                                   where c.Status != (int)ContractConst.CLOSE && c.BranchId == branch.BranchId 
+                                   select c;
+
+                var displayBranch = new DisplayBranch();
+                displayBranch.BranchId = branch.BranchId;
+                displayBranch.BranchName = branch.BranchName;
+                displayBranch.Address = branch.Address;
+                displayBranch.PhoneNumber = branch.PhoneNumber;
+                displayBranch.CurrentFund = branch.Fund - openContract.Sum(c => c.Loan);
+                displayBranchList.Add(displayBranch);
+            }           
+            return displayBranchList;
         }
         public async Task<bool> CreateBranch(Branch branch)
         {

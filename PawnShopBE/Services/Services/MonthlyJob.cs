@@ -24,9 +24,10 @@ namespace Services.Services
         private readonly ILedgerService _ledgerService;
         private readonly IBranchService _branchService;
         private readonly IRansomService _ransomService;
+        private readonly ILiquidationService _liquidationService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public MonthlyJob(DbContextClass dbContextClass, IContractService contractService, IRansomService ransomService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, ILedgerService ledgerService, IBranchService branchService, IUnitOfWork unitOfWork)
+        public MonthlyJob(DbContextClass dbContextClass, IContractService contractService, IRansomService ransomService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, ILedgerService ledgerService, IBranchService branchService, ILiquidationService liquidationService, IUnitOfWork unitOfWork)
         {
             _contextClass = dbContextClass;
             _contractService = contractService;
@@ -34,6 +35,7 @@ namespace Services.Services
             _interesDiaryService = interesDiaryService;
             _ledgerService = ledgerService;
             _branchService = branchService;
+            _liquidationService = liquidationService;
             _unitOfWork = unitOfWork;
         }
         public async Task Execute(IJobExecutionContext context)
@@ -56,74 +58,45 @@ namespace Services.Services
 
                 }
                 if (ledger != null)
-                {              
-                    // Get Fund of month
-                    ledger.Fund = ledger.Balance;
-
-                    // Get Total Interest Money Received Of Month
-                    var contractJoinInterestDiary = from contract in _contextClass.Contract
-                                                    join interestDiary in _contextClass.InterestDiary
-                                                    on contract.ContractId equals interestDiary.ContractId
-                                                    where contract.BranchId == branch.BranchId && contract.Status == (int)ContractConst.CLOSE && (contract.ContractStartDate >= firstDayOfMonth) && (contract.ContractEndDate <= lastDayOfMonth)
-                                                    select new
-                                                    {
-                                                        RecveivedInterest = interestDiary.PaidMoney
-                                                    };
-                    foreach (var row in contractJoinInterestDiary)
+                {
+                    decimal totalInterestGet = 0;
+                    decimal totalRansom = 0;
+                    decimal totalLiquidation = 0;
+                    ledger.Revenue = 0;
+                    ledger.Loan = 0;
+                    ledger.Profit = 0;
+                    var contractsOfBranch = await _contextClass.Set<Contract>()
+                        .Where(c => c.BranchId == branch.BranchId)
+                        .ToListAsync();
+                    foreach (var contract in contractsOfBranch)
                     {
-                        ledger.RecveivedInterest = ledger.RecveivedInterest + row.RecveivedInterest;
+                        var interestDiaryOfMonth = await _interesDiaryService.GetInteresDiariesByContractId(contract.ContractId);
+                        foreach (var interestDiary in interestDiaryOfMonth)
+                        {
+                            // Get interest money paid each day
+                            if (interestDiary != null)
+                            {
+                                totalInterestGet += interestDiary.PaidMoney;
+                            }
+                        }
+                        // Get money ransom paid each day
+                        var ransomOfMonth = await _ransomService.GetRansomByContractId(contract.ContractId);
+                        if (ransomOfMonth != null)
+                        {
+                            totalRansom += ransomOfMonth.PaidMoney;
+                        }
+
+                        // Get money liquidation paid each day
+                        var liquidationOfMonth = await _liquidationService.GetLiquidationById(contract.ContractId);
+                        if (liquidationOfMonth != null)
+                        {
+                            totalLiquidation += liquidationOfMonth.LiquidationMoney;
+                        }
+                        ledger.Revenue = totalLiquidation + totalRansom + totalInterestGet;
+                        ledger.Loan = contract.Loan;
+                        ledger.Profit = ledger.Revenue - ledger.Loan;
+                        _ledgerService.UpdateLedger(ledger);
                     }
-
-                    // Get Total Liquidation Money Received Of Month
-                    var contractJoinLiquidation = from contract in _contextClass.Contract
-                                                  join liquidation in _contextClass.Liquidtation
-                                                  on contract.ContractId equals liquidation.ContractId
-                                                  where contract.BranchId == branch.BranchId && contract.Status == (int)ContractConst.CLOSE && (contract.ContractStartDate >= firstDayOfMonth) && (contract.ContractEndDate <= lastDayOfMonth)
-                                                  select new
-                                                  {
-                                                      LiquidationMoney = liquidation.LiquidationMoney
-                                                  };
-                    foreach (var row in contractJoinLiquidation)
-                    {
-                        ledger.LiquidationMoney = ledger.LiquidationMoney + row.LiquidationMoney;
-                    }
-
-                    // get total principal money received of month
-                    var contractJoinRansom = from contract in _contextClass.Contract
-                                             join ransom in _contextClass.Ransom
-                                             on contract.ContractId equals ransom.RansomId
-                                             where contract.BranchId == branch.BranchId && contract.Status == (int)ContractConst.CLOSE && (contract.ContractStartDate >= firstDayOfMonth) && (contract.ContractEndDate <= lastDayOfMonth)
-                                             select new
-                                             {
-                                                 PrincipalMoney = ransom.Payment,
-                                                 Penalty = ransom.Penalty
-                                             };
-                    foreach (var row in contractJoinRansom)
-                    {
-                        ledger.ReceivedPrincipal = ledger.ReceivedPrincipal + row.PrincipalMoney;
-                        ledger.RecveivedInterest = ledger.RecveivedInterest + row.Penalty;
-                    }
-                    // Get Total Loan Of Month
-                    var totalContractOfMonth = from contract in _contextClass.Contract
-                                               where (contract.BranchId == branch.BranchId) && (contract.ContractStartDate >= firstDayOfMonth) && (contract.ContractEndDate <= lastDayOfMonth)
-                                               select new
-                                               {
-                                                   Loan = contract.Loan
-                                               };
-                    foreach (var row in totalContractOfMonth)
-                    {
-                        ledger.Loan = ledger.Loan + row.Loan;
-                    }
-
-                    // Get Balance Of Month
-                    ledger.Balance = (long)(ledger.Fund + (ledger.Loan - (ledger.ReceivedPrincipal + ledger.RecveivedInterest + ledger.LiquidationMoney)));
-
-                    // Profit revenue if balance > fund
-                    ledger.Status = (ledger.Balance > ledger.Fund) ? (int)LedgerConst.PROFIT_REVENUE : (int)LedgerConst.LOSS_REVENUE;
-
-                    _ledgerService.UpdateLedger(ledger);
-                    branch.Fund = ledger.Balance;
-                    _unitOfWork.Branches.Update(branch);
                 }
                 else
                 {
@@ -132,20 +105,15 @@ namespace Services.Services
                     ledger.FromDate = firstDayOfMonth;
                     ledger.ToDate = lastDayOfMonth;
                     ledger.BranchId = branch.BranchId;
-                    ledger.RecveivedInterest = 0;
-                    ledger.ReceivedPrincipal = 0;
-                    ledger.LiquidationMoney = 0;
+                    ledger.Revenue = 0;
+                    ledger.Profit = 0;
                     ledger.Loan = 0;
-                    ledger.Balance = 0;
-                    ledger.Fund = branch.Fund;
-                    ledger.Status = (int)LedgerConst.LOSS_REVENUE;
                     ICollection<Ledger> ledgerList = new List<Ledger>();
                     _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Ledger ON;");
                     ledgerList.Add(ledger);
                     await _unitOfWork.Ledgers.AddList(ledgerList);
                     _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Ledger OFF;");
                 }
-
             }
             await _unitOfWork.SaveList();
         }

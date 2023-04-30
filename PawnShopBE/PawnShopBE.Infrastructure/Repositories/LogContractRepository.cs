@@ -31,7 +31,7 @@ namespace PawnShopBE.Infrastructure.Repositories
             foreach (var contract in contractByBranchId)
             {
             var logContractByBranchId = await _dbContext.Set<LogContract>()
-                .Where(e => e.ContractId == contract.ContractId)
+                .Where(e => e.ContractId == contract.ContractId && e.LogTime.Month == DateTime.Today.Month)
                 .ToListAsync();
             foreach(var logContract in logContractByBranchId)
                 {

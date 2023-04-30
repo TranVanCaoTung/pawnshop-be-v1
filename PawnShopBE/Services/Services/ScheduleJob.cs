@@ -26,6 +26,8 @@ namespace Services.Services
         private readonly IInteresDiaryService _interesDiaryService;
         private readonly ILogContractService _logContractService;
         private readonly IUserService _userService;
+        private DateTime lastNotificationTime = DateTime.MinValue;
+
         public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService)
         {
             _contextClass = dbContextClass;
@@ -37,6 +39,12 @@ namespace Services.Services
         }
         public async Task Execute(IJobExecutionContext context)
         {
+            TimeSpan timeSinceLastNotification = DateTime.UtcNow - lastNotificationTime;
+            if (timeSinceLastNotification.TotalMinutes >= 1)
+            {
+                // code to create the notification
+                lastNotificationTime = DateTime.UtcNow;
+            }
             // Auto Create Account Admin if it null Username: Admin, Password: Admin12345
             var admin = _contextClass.Admin.SingleOrDefault(p => p.UserName == "Admin");
             if (admin == null)
@@ -83,7 +91,7 @@ namespace Services.Services
 
                 decimal paymentFee = (contract.Loan * (1 + package.PackageInterest)) * package.PackageInterest;
 
-                // Penalty for < 1 month and > 3 month
+                // Penalty for Punish Day 2 != 0
                 if (package.PunishDay2 != 0)
                 {
                     // Overdue punish day 1
@@ -97,7 +105,7 @@ namespace Services.Services
                         ransom.Penalty = paymentFee * 2;
                     }
                 }
-                // Penalty between 1 month to 3 month
+                // Penalty for Punish Day 2 == 0
                 else
                 {
                     if (totalDays == (double)package.PunishDay1 || totalDays < (double)package.LiquitationDay)
@@ -118,10 +126,13 @@ namespace Services.Services
 
             foreach (var diary in overdueDiaries)
             {
+                var existContract = await _contractService.GetContractById(diary.ContractId);
+                var package = await _packageService.GetPackageById(existContract.PackageId);
+
                 // Payment Fee for Interest if overdue periods
                 if (diary.Penalty == 0)
                 {
-                    diary.Penalty = diary.Payment / 2;
+                    diary.Penalty = diary.Payment * (package.InterestDiaryPenalty * (decimal)0.01);
                 }
                 diary.TotalPay = diary.Penalty + diary.Payment;
 
@@ -136,7 +147,7 @@ namespace Services.Services
                                                        ContractId = contract.ContractId,
                                                        UserName = user.FullName,
                                                        CustomerName = customer.FullName,
-                                                   }; 
+                                                   };
                 var logContract = new LogContract();
                 foreach (var row in contractJoinUserJoinCustomer)
                 {
@@ -152,7 +163,7 @@ namespace Services.Services
                 await _logContractService.CreateLogContract(logContract);
             }
 
-
+            
             _contextClass.SaveChanges();
         }
     }

@@ -9,7 +9,7 @@ namespace PawnShopBE.Core.Const
     public enum InterestDiaryConsts
     {
         NOT_PAID = 1,
-        PAID = 2
-        
+        DEBT = 2,
+        PAID = 3  
     }
 }

@@ -1,6 +1,9 @@
-﻿using PawnShopBE.Core.Const;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Display;
 using PawnShopBE.Core.Interfaces;
+using PawnShopBE.Core.Models;
 using PawnShopBE.Infrastructure.Helpers;
 using Services.Services.IServices;
 using System;
@@ -21,9 +24,27 @@ namespace Services.Services
             _dbContextClass = dbContextClass;
         }
 
-        public Task<IEnumerable<DisplayNotification>> NotificationList(int branchId)
+        public async Task<bool> CreateNotification(int branchId)
         {
-            throw new NotImplementedException();
+        //    _dbContextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary ON;");
+        //    interestDiaries.Add(interestDiary);
+        //    await _unit.InterestDiaries.AddList(interestDiaries);
+        //    _dbContextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary OFF;");
+
+        //}
+        //result = await _unit.SaveList();
+
+        //        if (result > 0)
+        //        {
+        //            return true;
+        //        }
+            return false;
+        }
+
+        public async Task<IEnumerable<DisplayNotification>> NotificationList(int branchId)
+        {
+            var notifiList = new List<DisplayNotification>();
+            return notifiList;
         }
     }
 }

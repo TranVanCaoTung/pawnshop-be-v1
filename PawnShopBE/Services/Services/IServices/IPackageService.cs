@@ -11,5 +11,8 @@ namespace Services.Services.IServices
     {
         Task<IEnumerable<Package>> GetAllPackages(int num);
         Task<Package> GetPackageById(int packageId);
+        Task<bool> UpdatePackage(Package package);
+        Task<bool> CreatePackage(Package package);
+
     }
 }

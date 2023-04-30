@@ -16,6 +16,9 @@ using Services.Services.IServices;
 using PawnShopBE.Core.Const;
 using AutoMapper;
 using PawnShopBE.Core.Responses;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Cors;
 
 namespace PawnShopBE.Controllers
 {
@@ -32,21 +35,61 @@ namespace PawnShopBE.Controllers
             _authen = authentication;
             _mapper = mapper;
         }
-        [HttpPost("renewToken")]
-        public async Task<IActionResult> RenewToken(TokenModel tokenmodel)
+        //[HttpPost("renewToken")]
+        //public async Task<IActionResult> RenewToken(TokenModel tokenmodel)
+        //{
+        //    var token = tokenmodel;
+        //    if (token != null)
+        //    {
+        //        var respone = await _authen.RenewToken(token);
+        //        return Ok(respone);
+        //    }
+        //    return BadRequest();
+        //}
+        private string name { get; set; }
+        private string email { get; set; }
+        private string id { get; set; }
+        private string branchid { get; set; }
+
+        [HttpPost("decrypttoken")]
+        public async Task<IActionResult> DecryptToken(TokenModel tokenmodel)
         {
-            var token = tokenmodel;
+            var token = tokenmodel.AccessToken;
             if (token != null)
             {
-                var respone = await _authen.RenewToken(token);
-                return Ok(respone);
+                var readToken = _authen.EncrypToken(token);
+                var respone = readToken.Claims;
+                foreach(var x in respone)
+                {
+                   switch (x.Type)
+                    {
+                        case "Email":
+                            email=x.Value;
+                            break;
+                        case "UserId":
+                            id = x.Value;
+                            break;
+                        case "Name":
+                            name = x.Value;
+                            break;
+                        case "BranchId":
+                            branchid= x.Value;
+                            break;
+                    }
+                }
+                return Ok(new
+                {
+                    Name = name,
+                    Email=email,
+                    BranchId=branchid,
+                    UserId=id
+                }) ;
             }
             return BadRequest();
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login(Login login)
         {
-            //var result=await _authen.Login(login);
             var user = _context.User.SingleOrDefault(p => p.UserName == login.userName);
             if (user != null)
             {
@@ -55,12 +98,11 @@ namespace PawnShopBE.Controllers
                 {
                     var userRepsonse = _mapper.Map<UserRepsonse>(user);
                     // cấp token
-                    var token = await _authen.GenerateToken();
+                    var token = await _authen.GenerateToken(user, null) ;
                     if (token != null)
                     {
                         return Ok(new
                         {
-                            Account = userRepsonse,
                             Token = token
                         });
                     }
@@ -74,12 +116,11 @@ namespace PawnShopBE.Controllers
                 if (isValidAdminPassword)
                 {
                     // cấp token
-                    var token = await _authen.GenerateToken();
+                    var token = await _authen.GenerateToken(null,admin);
                     if (token != null)
                     {
                         return Ok(new
                         {
-                            Account = admin,
                             Token = token
                         });
                     }

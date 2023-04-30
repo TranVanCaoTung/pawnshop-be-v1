@@ -50,8 +50,10 @@ namespace PawnShopBE.Infrastructure.Repositories
         public IRansomRepository Ransoms { get; }
         public IPermissionReporsitory Permission { get; }
         public IUserPermissionGroupRepository UserPermissionGroup { get; }
-        public IMoneyRepository Money { get; }
         public ILogContractRepository LogContracts { get; }
+        public IDiaryImgRepository DiaryImgs { get; }
+        public ILogAssetRepository LogAssets { get; }
+        public INotificationRepository Notifications { get; }
         public UnitOfWork(  DbContextClass dbContext,
                             IUserRepository userRepository, 
                             IBranchRepository branchRepository,
@@ -71,8 +73,11 @@ namespace PawnShopBE.Infrastructure.Repositories
         IJobRepository jobRepository,
         ICustomerRelativeRelationshipRepository customerRelativeRelationshipRepository,
         IRansomRepository ransomRepository,IPermissionReporsitory permissionReporsitory,
-        IUserPermissionGroupRepository userPermissionGroupRepository,IMoneyRepository moneyRepository,
-        ILogContractRepository logContractRepository)
+        IUserPermissionGroupRepository userPermissionGroupRepository,
+        ILogContractRepository logContractRepository,
+        IDiaryImgRepository diaryImgRepository,
+        ILogAssetRepository logAssetRepository,
+        INotificationRepository notificationRepository)
         {
             _dbContext = dbContext;
             Users = userRepository;
@@ -95,8 +100,10 @@ namespace PawnShopBE.Infrastructure.Repositories
             Ransoms = ransomRepository;
             Permission= permissionReporsitory;
             UserPermissionGroup= userPermissionGroupRepository;
-            Money= moneyRepository;
             LogContracts = logContractRepository;
+            DiaryImgs = diaryImgRepository;
+            LogAssets = logAssetRepository;
+            Notifications = notificationRepository;
         }
 
      

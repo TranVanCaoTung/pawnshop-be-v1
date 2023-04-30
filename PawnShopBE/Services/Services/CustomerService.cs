@@ -343,6 +343,7 @@ namespace Services.Services
                     customerUpdate.Address = customer.Address;
                     customerUpdate.FullName = customer.FullName;
                     customerUpdate.UpdateDate = DateTime.Now;
+                    customerUpdate.Reason = customer.Reason;
                     _unitOfWork.Customers.Update(customerUpdate);
                     var result = _unitOfWork.Save();
                     if (result > 0)
@@ -358,6 +359,7 @@ namespace Services.Services
             return false;
         }
 
+       
 
     }
 }

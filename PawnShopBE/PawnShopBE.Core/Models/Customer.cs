@@ -20,13 +20,18 @@ namespace PawnShopBE.Core.Models
         public DateTime? UpdateDate { get; set; }
         public int Status { get; set; }
         public int Point { get; set; }
+        public string? Reason { get; set; }
 
 
-
+        [JsonIgnore]
         public virtual Kyc? Kyc { get; set; }
+        [JsonIgnore]
         public ICollection<Contract>? Contracts { get; set; }
+        [JsonIgnore]
         public ICollection<DependentPeople>? DependentPeople { get; set; }
+        [JsonIgnore]
         public ICollection<Job>? Jobs { get; set; }
+        [JsonIgnore]
         public ICollection<CustomerRelativeRelationship>? CustomerRelativeRelationships { get; set; }
         public Customer()
         {

@@ -46,6 +46,33 @@ namespace Services.Services
             return result;
         }
 
+        public async Task<IEnumerable<Ledger>> GetLedgersByBranchId(int branchId, int year)
+        {
+            try
+            {
+                var ledgerList = await _dbContext.Set<Ledger>()
+                            .Where(l => l.BranchId == branchId && l.ToDate.Year == year)
+                            .OrderBy(l => l.ToDate.Month)
+                            .ToListAsync();
+                if (ledgerList != null)
+                {
+                    foreach (var ledger in ledgerList)
+                    {
+                        ledger.Revenue = (long) ledger.Revenue;
+                        ledger.Profit = (long) ledger.Profit;
+                        ledger.Loan = (long) ledger.Loan;
+                    }
+                        return ledgerList;
+                }
+            }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine(e);
+            }
+
+            return null;
+        }
+
         public async Task<IEnumerable<Ledger>> GetLedgersByBranchId(int branchId)
         {
             try
@@ -66,19 +93,27 @@ namespace Services.Services
             return null;
         }
 
+        public async Task<IEnumerable<int>> GetYearsOfLedger()
+        {
+            var ledgerByYear = await _dbContext.Set<Ledger>()
+             .GroupBy(l => l.ToDate.Year)
+             .ToListAsync();
+            var years = new List<int>();
+            foreach(var ledger in ledgerByYear)
+            {
+                years.Add(ledger.Key);
+            }
+            return years.OrderByDescending(x =>x).ToList();
+        }
+
         public async Task<bool> UpdateLedger(Ledger ledger)
         {
             var ledgerUpdate = _unit.Ledgers.SingleOrDefault(ledger, j => j.LedgerId == ledger.LedgerId);
             if (ledgerUpdate != null)
             {
-                ledgerUpdate.ReceivedPrincipal = ledger.ReceivedPrincipal;
-                ledgerUpdate.RecveivedInterest = ledger.RecveivedInterest;
-                ledgerUpdate.Loan = ledger.Loan;
-                ledgerUpdate.Balance = ledger.Balance;
-                ledgerUpdate.Fund = ledger.Fund;
-                ledgerUpdate.Status = ledger.Status;
-                ledgerUpdate.LiquidationMoney = ledger.LiquidationMoney;
-
+                ledgerUpdate.Profit = ledger.Profit;
+                ledgerUpdate.Revenue = ledger.Revenue;
+                ledgerUpdate.Loan = ledger.Loan;          
                 _unit.Ledgers.Update(ledgerUpdate);
                 var result = _unit.Save();
                 if (result > 0)

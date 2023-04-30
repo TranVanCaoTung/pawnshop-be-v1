@@ -9,6 +9,6 @@ namespace PawnShopBE.Core.Data
    public class TokenModel
     {
         public string AccessToken { get; set; }
-        public string? RefeshToken { get; set; }
+       // public string? RefeshToken { get; set; }
     }
 }

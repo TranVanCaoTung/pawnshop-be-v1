@@ -42,8 +42,9 @@ namespace Services.Services
         {
             if (contract != null)
             {
-                var ransom = new Ransom();
+                var package = await _package.GetPackageById(contract.PackageId);
 
+                var ransom = new Ransom();               
                 ransom.ContractId = contract.ContractId;
                 ransom.Payment = contract.Loan;
                 ransom.PaidMoney = 0;
@@ -51,26 +52,7 @@ namespace Services.Services
                 ransom.Status = (int)RansomConsts.SOON;
                 ransom.Description = null;
                 ransom.ProofImg = null;
-                if (contract.Package.Day < 120)
-                {
-                    ransom.Penalty = 0;
-                }
-                // Penalty for pay all before duedate (50% interest paid & contract must > 6 months)
-                // Penalty for contract 6 months
-                else if (contract.Package.Day == 180)
-                {
-                    ransom.Penalty = ransom.Payment * (decimal)0.03;
-                }
-                // Penalty for contract 9 months
-                else if (contract.Package.Day == 270)
-                {
-                    ransom.Penalty = ransom.Payment * (decimal)0.04;
-                }
-                // Penalty for contract 12 months
-                else if (contract.Package.Day == 360)
-                {
-                    ransom.Penalty = ransom.Payment * (decimal)0.05;
-                }
+                ransom.Penalty = ransom.Payment * (package.RansomPenalty * (decimal)0.01);
                 ransom.TotalPay = contract.Loan + ransom.Penalty;
 
                 await _unitOfWork.Ransoms.Add(ransom);
@@ -195,9 +177,9 @@ namespace Services.Services
             return false;
         }
 
-        public Task<Ransom> GetRansomByContractId(int contractId)
+        public async Task<Ransom> GetRansomByContractId(int contractId)
         {
-            var ransom = _ransomRepository.GetRanSomByContractId(contractId);
+            var ransom = await _ransomRepository.GetRanSomByContractId(contractId);
             return ransom;
         }
     }

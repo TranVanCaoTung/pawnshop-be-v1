@@ -113,8 +113,6 @@ namespace PawnShopBE.Helpers
             #endregion Contract
 
             #region Branch
-            CreateMap<Branch, DisplayBranch>().ReverseMap();
-            CreateMap<Branch, DisplayBranchDetail>().ReverseMap();
             CreateMap<BranchDTO, Branch>().ReverseMap();
             #endregion Branch
 
@@ -137,39 +135,13 @@ namespace PawnShopBE.Helpers
             CreateMap<InterestDiary, InterestDiaryDTO>().ReverseMap();
             CreateMap<ContractAsset, ContractAssetDTO>().ReverseMap();
             CreateMap<DependentPeople, DependentPeopleDTO>().ReverseMap();
-            CreateMap<MoneyDTO,Money>().ReverseMap();
             CreateMap<CustomerRelativeDTO, CustomerRelativeRelationship>().ReverseMap();
-
-            // Mapping from ledger to displayReportMonth
-            CreateMap<Ledger, DisplayReportMonth>()
-                .ForMember(
-                    dest => dest.BranchId,
-                    opt => opt.MapFrom(src => src.BranchId))
-                .ForMember(
-                    dest => dest.ReceiveInterest,
-                    opt => opt.MapFrom(src => src.RecveivedInterest))
-                .ForMember(
-                    dest => dest.ReceivedPrincipal,
-                    opt => opt.MapFrom(src => src.ReceivedPrincipal))
-                .ForMember(
-                    dest => dest.Balance,
-                    opt => opt.MapFrom(src => src.Balance))
-                .ForMember(
-                    dest => dest.Loan,
-                    opt => opt.MapFrom(src => src.Loan))
-                .ForMember(
-                    dest => dest.Fund,
-                    opt => opt.MapFrom(src => src.Fund))
-                .ForMember(
-                    dest => dest.Status,
-                    opt => opt.MapFrom(src => src.Status))
-                .ForMember(
-                    dest => dest.LiquidationMoney,
-                    opt => opt.MapFrom(src => src.LiquidationMoney));
 
             // Mapping from User to UserRepsonse
             CreateMap<User, UserRepsonse>();
 
+            // Mapping from logAsset to DisplayLogAsset
+            CreateMap<LogAsset, DisplayLogAsset>().ReverseMap();
         }
     }
 }

@@ -40,6 +40,7 @@ namespace Services.Services
         public async Task<IEnumerable<LogContract>> GetLogContracts(int num)
         {
             var logContractList = await _unitOfWork.LogContracts.GetAll();
+            logContractList = logContractList.OrderByDescending(x => x.LogTime);
             if (num == 0)
             {
                 return logContractList;
@@ -51,6 +52,7 @@ namespace Services.Services
         public async Task<IEnumerable<LogContract>> LogContractsByBranchId(int branchId)
         {
             var logContract = await _logContractRepository.getLogContractsByBranchId(branchId);
+            logContract = logContract.OrderByDescending(x => x.LogTime);
             try
             {
             }
@@ -61,9 +63,10 @@ namespace Services.Services
             return logContract;
         }
 
-        public Task<IEnumerable<LogContract>> LogContractsByContractId(int contractId)
+        public async Task<IEnumerable<LogContract>> LogContractsByContractId(int contractId)
         {
-            var logContract = _logContractRepository.getLogContractsByContractId(contractId);
+            var logContract = await _logContractRepository.getLogContractsByContractId(contractId);
+            logContract = logContract.OrderByDescending(x => x.LogTime);
             try
             {
             } catch (NullReferenceException e)

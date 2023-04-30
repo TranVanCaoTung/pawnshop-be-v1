@@ -12,7 +12,7 @@ namespace Services.Services.IServices
         Task<bool> CreateInterestDiary(Contract contract);
         Task<IEnumerable<InterestDiary>> GetInteresDiary();
         Task<IEnumerable<InterestDiary>> GetInteresDiariesByContractId(int contractId);
-        Task<bool> UpdateInterestDiary(int id, decimal paidMoney);
+        Task<bool> UpdateInterestDiary(int id, decimal paidMoney, List<string> proofImg);
         Task<bool> DeleteInteresDiary(int interestDiaryId);
         public Task<bool> UploadInterestDiaryImg(int interestDiaryId, string interestDiaryImg);
     }

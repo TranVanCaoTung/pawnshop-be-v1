@@ -24,11 +24,13 @@ namespace PawnShopBE.Core.Models
         public ICollection<User>? Users { get; set; }
         public ICollection<Contract>? Contracts { get; set; }
         public ICollection<Ledger>? Ledgers { get; set; }
+        public ICollection<Notification> Notifications { get; set; }
         public Branch()
         {
             Users = new List<User>();
             Contracts = new List<Contract>();
             Ledgers = new List<Ledger>();
+            Notifications = new List<Notification>();
         }
     }
 }

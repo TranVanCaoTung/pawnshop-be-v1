@@ -31,35 +31,28 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
-        
-    //[HttpPost("createLedger")]
-    //    public async Task<IActionResult> CreateLedger( LedgerDTO ledger)
-    //    {
-    //        //Check Validation
-    //        var checkValidation = await _validation.CheckValidation(ledger);
-    //        if (checkValidation != null)
-    //        {
-    //            return BadRequest(checkValidation);
-    //        }
-    //        var ledgerMapper = _mapper.Map<Ledger>(ledger);
-    //        var respone = await _ledgerService.CreateLedger(ledgerMapper);
-    //        if (respone != null)
-    //        {
-    //            return Ok(respone);
-    //        }
-    //        return BadRequest();
-    //    }
 
-        //[HttpDelete("deleteLedger/{id}")]
-        //public async Task<IActionResult> DeleteLedger( int id)
-        //{
-        //    var respone = await _ledgerService.DeleteLedger(id);
-        //    if (respone != null)
-        //    {
-        //        return Ok(respone);
-        //    }
-        //    return BadRequest();
-        //}
+        [HttpGet("getbyBranchId/{branchId}/{year}")]
+        public async Task<IActionResult> GetByBranchId(int branchId, int year)
+        {
+            var respone = await _ledgerService.GetLedgersByBranchId(branchId, year);
+            if (respone != null)
+            {
+                return Ok(respone);
+            }
+            return BadRequest();
+        }
+
+        [HttpGet("yearsOfLeger")]
+        public async Task<IActionResult> GetYearsOfLeger()
+        {
+            var respone = await _ledgerService.GetYearsOfLedger();
+            if (respone != null)
+            {
+                return Ok(respone);
+            }
+            return BadRequest();
+        }
 
         [HttpPut("updateLedger")]
         public async Task<IActionResult> UpdateLedger( LedgerDTO ledger)
