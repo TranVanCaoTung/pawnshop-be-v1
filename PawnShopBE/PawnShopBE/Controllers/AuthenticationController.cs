@@ -19,6 +19,8 @@ using PawnShopBE.Core.Responses;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors;
+using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace PawnShopBE.Controllers
 {
@@ -29,28 +31,16 @@ namespace PawnShopBE.Controllers
         private readonly DbContextClass _context;
         private IAuthentication _authen;
         private IMapper _mapper;
-        public AuthenticationController(DbContextClass context, IAuthentication authentication, IMapper mapper)
+        private IPermissionService _permissionService;
+        private IUserService _userService;
+        public AuthenticationController(DbContextClass context, IAuthentication authentication, IMapper mapper, IPermissionService permissionService, IUserService userService)
         {
             _context = context;
             _authen = authentication;
             _mapper = mapper;
+            _permissionService = permissionService;
+            _userService = userService;
         }
-        //[HttpPost("renewToken")]
-        //public async Task<IActionResult> RenewToken(TokenModel tokenmodel)
-        //{
-        //    var token = tokenmodel;
-        //    if (token != null)
-        //    {
-        //        var respone = await _authen.RenewToken(token);
-        //        return Ok(respone);
-        //    }
-        //    return BadRequest();
-        //}
-        private string name { get; set; }
-        private string email { get; set; }
-        private string id { get; set; }
-        private string branchid { get; set; }
-
         [HttpPost("decrypttoken")]
         public async Task<IActionResult> DecryptToken(TokenModel tokenmodel)
         {
@@ -59,31 +49,27 @@ namespace PawnShopBE.Controllers
             {
                 var readToken = _authen.EncrypToken(token);
                 var respone = readToken.Claims;
-                foreach(var x in respone)
+                var branchIds = new List<int>();
+                var userId = new Guid();
+                foreach (var x in respone)
                 {
-                   switch (x.Type)
+                    switch (x.Type)
                     {
-                        case "Email":
-                            email=x.Value;
-                            break;
                         case "UserId":
-                            id = x.Value;
+                            userId = Guid.Parse(x.Value);
                             break;
-                        case "Name":
-                            name = x.Value;
-                            break;
-                        case "BranchId":
-                            branchid= x.Value;
+                        case "BranchIds":
+                            branchIds = x.Value.Split(',').Select(int.Parse).ToList();
                             break;
                     }
                 }
+                var userPermissions = await _permissionService.ShowPermission(userId);
+                var user = await _userService.GetUserById(userId);
                 return Ok(new
                 {
-                    Name = name,
-                    Email=email,
-                    BranchId=branchid,
-                    UserId=id
-                }) ;
+                    User = user,
+                    BranchIds = branchIds,
+                });
             }
             return BadRequest();
         }
@@ -96,9 +82,19 @@ namespace PawnShopBE.Controllers
                 bool isValidPassword = BCrypt.Net.BCrypt.Verify(login.password, user.Password);
                 if (isValidPassword)
                 {
-                    var userRepsonse = _mapper.Map<UserRepsonse>(user);
+                    var userRepsonse = new UserRepsonse();
+
+                    // Get Branch list
+                    var userBranchs = _context.UserBranches.Where(u => u.UserId == user.UserId);
+                    var listBranch = new List<int>();
+                    foreach (var branch in userBranchs)
+                    {
+                        listBranch.Add(branch.BranchId);
+                    }
+                    userRepsonse.UserId = user.UserId;
+                    userRepsonse.BranchIds = listBranch;
                     // cấp token
-                    var token = await _authen.GenerateToken(user, null) ;
+                    var token = await _authen.GenerateToken(userRepsonse);
                     if (token != null)
                     {
                         return Ok(new
@@ -108,25 +104,6 @@ namespace PawnShopBE.Controllers
                     }
                 }
             }
-            
-            var admin = _context.Admin.SingleOrDefault(p => p.UserName == login.userName);
-            if (admin != null)
-            {
-                bool isValidAdminPassword = BCrypt.Net.BCrypt.Verify(login.password, admin.Password);
-                if (isValidAdminPassword)
-                {
-                    // cấp token
-                    var token = await _authen.GenerateToken(null,admin);
-                    if (token != null)
-                    {
-                        return Ok(new
-                        {
-                            Token = token
-                        });
-                    }
-                }
-            }
-            
             return BadRequest(new
             {
                 result = "Invalid UserName or Password"

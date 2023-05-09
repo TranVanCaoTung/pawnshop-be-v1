@@ -12,8 +12,8 @@ using PawnShopBE.Infrastructure.Helpers;
 namespace PawnShopBE.Infrastructure.Migrations
 {
     [DbContext(typeof(DbContextClass))]
-    [Migration("20230424152608_AddNotification")]
-    partial class AddNotification
+    [Migration("20230509060035_DbInit")]
+    partial class DbInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,29 +24,6 @@ namespace PawnShopBE.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("PawnShopBE.Core.Models.Admin", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Admin", (string)null);
-                });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Attribute", b =>
                 {
@@ -177,7 +154,8 @@ namespace PawnShopBE.Infrastructure.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.HasIndex("ContractAssetId");
+                    b.HasIndex("ContractAssetId")
+                        .IsUnique();
 
                     b.HasIndex("CustomerId");
 
@@ -389,9 +367,6 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("NextDueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("PaidDate")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("PaidMoney")
@@ -707,23 +682,23 @@ namespace PawnShopBE.Infrastructure.Migrations
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Permission", b =>
                 {
-                    b.Property<int>("perId")
+                    b.Property<int>("PerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("perId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PerId"));
 
-                    b.Property<string>("description")
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("namePermission")
+                    b.Property<string>("NamePermission")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.HasKey("perId");
+                    b.HasKey("PerId");
 
                     b.ToTable("Permissions");
                 });
@@ -826,11 +801,7 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("BranchId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
@@ -840,7 +811,6 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
@@ -848,7 +818,6 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoleId")
@@ -866,29 +835,50 @@ namespace PawnShopBE.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("BranchId");
-
                     b.HasIndex("RoleId");
 
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("PawnShopBE.Core.Models.UserPermissionGroup", b =>
+            modelBuilder.Entity("PawnShopBE.Core.Models.UserBranch", b =>
                 {
-                    b.Property<int>("perId")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "BranchId");
+
+                    b.HasIndex("BranchId");
+
+                    b.ToTable("UserBranch", (string)null);
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.UserPermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PerId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.HasKey("perId", "UserId");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserPermissionGroups");
+                    b.ToTable("UserPermissions");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Warehouse", b =>
@@ -935,8 +925,8 @@ namespace PawnShopBE.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("PawnShopBE.Core.Models.ContractAsset", "ContractAsset")
-                        .WithMany("Contracts")
-                        .HasForeignKey("ContractAssetId")
+                        .WithOne("Contract")
+                        .HasForeignKey("PawnShopBE.Core.Models.Contract", "ContractAssetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1122,32 +1112,45 @@ namespace PawnShopBE.Infrastructure.Migrations
 
             modelBuilder.Entity("PawnShopBE.Core.Models.User", b =>
                 {
-                    b.HasOne("PawnShopBE.Core.Models.Branch", "Branch")
-                        .WithMany("Users")
-                        .HasForeignKey("BranchId");
-
                     b.HasOne("PawnShopBE.Core.Models.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Branch");
-
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("PawnShopBE.Core.Models.UserPermissionGroup", b =>
+            modelBuilder.Entity("PawnShopBE.Core.Models.UserBranch", b =>
                 {
+                    b.HasOne("PawnShopBE.Core.Models.Branch", "Branch")
+                        .WithMany("UserBranches")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("PawnShopBE.Core.Models.User", "User")
-                        .WithMany("UserPermissionGroups")
+                        .WithMany("UserBranches")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Branch");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PawnShopBE.Core.Models.UserPermission", b =>
+                {
                     b.HasOne("PawnShopBE.Core.Models.Permission", "Permission")
                         .WithMany()
-                        .HasForeignKey("perId")
+                        .HasForeignKey("PerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PawnShopBE.Core.Models.User", "User")
+                        .WithMany("UserPermission")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1164,7 +1167,7 @@ namespace PawnShopBE.Infrastructure.Migrations
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("Users");
+                    b.Navigation("UserBranches");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Contract", b =>
@@ -1180,7 +1183,8 @@ namespace PawnShopBE.Infrastructure.Migrations
 
             modelBuilder.Entity("PawnShopBE.Core.Models.ContractAsset", b =>
                 {
-                    b.Navigation("Contracts");
+                    b.Navigation("Contract")
+                        .IsRequired();
 
                     b.Navigation("LogAssets");
                 });
@@ -1228,7 +1232,9 @@ namespace PawnShopBE.Infrastructure.Migrations
                 {
                     b.Navigation("Contracts");
 
-                    b.Navigation("UserPermissionGroups");
+                    b.Navigation("UserBranches");
+
+                    b.Navigation("UserPermission");
                 });
 
             modelBuilder.Entity("PawnShopBE.Core.Models.Warehouse", b =>

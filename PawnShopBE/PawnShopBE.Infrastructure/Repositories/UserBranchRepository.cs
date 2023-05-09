@@ -4,15 +4,14 @@ using PawnShopBE.Infrastructure.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PawnShopBE.Infrastructure.Repositories
 {
-    public class UserPerGroupRepository : GenericRepository<UserPermission>, IUserPermissionGroupRepository
+    public class UserBranchRepository : GenericRepository<UserBranch>, IUserBranchRepository
     {
-        public UserPerGroupRepository(DbContextClass dbContext) : base(dbContext)
+        public UserBranchRepository(DbContextClass dbContext) : base(dbContext)
         {
 
         }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PawnShopBE.Core.Interfaces
 {
-    public interface IUserPermissionGroupRepository : IGenericRepository<UserPermission>
+    public interface IUserBranchRepository : IGenericRepository<UserBranch>
     {
     }
 }

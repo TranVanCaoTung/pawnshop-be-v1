@@ -54,6 +54,8 @@ namespace PawnShopBE.Infrastructure.Repositories
         public IDiaryImgRepository DiaryImgs { get; }
         public ILogAssetRepository LogAssets { get; }
         public INotificationRepository Notifications { get; }
+        public IUserBranchRepository UserBranchs { get; }
+       
         public UnitOfWork(  DbContextClass dbContext,
                             IUserRepository userRepository, 
                             IBranchRepository branchRepository,
@@ -77,7 +79,8 @@ namespace PawnShopBE.Infrastructure.Repositories
         ILogContractRepository logContractRepository,
         IDiaryImgRepository diaryImgRepository,
         ILogAssetRepository logAssetRepository,
-        INotificationRepository notificationRepository)
+        INotificationRepository notificationRepository,
+        IUserBranchRepository userBranchRepository)
         {
             _dbContext = dbContext;
             Users = userRepository;
@@ -104,6 +107,7 @@ namespace PawnShopBE.Infrastructure.Repositories
             DiaryImgs = diaryImgRepository;
             LogAssets = logAssetRepository;
             Notifications = notificationRepository;
+            UserBranchs = userBranchRepository;
         }
 
      

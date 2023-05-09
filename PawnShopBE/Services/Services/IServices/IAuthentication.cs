@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PawnShopBE.Core.Data;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Core.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Services.Services.IServices
 {
     public interface IAuthentication
     {
-        Task<TokenModel> GenerateToken(User? user,Admin? admin);
+        Task<TokenModel> GenerateToken(UserRepsonse? user);
         //Task<ApiRespone> RenewToken(TokenModel tokenModel);
         Task<IEnumerable<RefeshToken>> getAllToken();
         Task<bool> Login(Login user);

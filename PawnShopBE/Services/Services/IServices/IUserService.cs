@@ -10,15 +10,12 @@ namespace Services.Services.IServices
 {
     public interface IUserService
     {
-        Task<bool> CreateUser(User user);
-        Task<bool> CreateAdmin(Admin admin);
+        Task<bool> CreateUser(UserDTO user);
         Task<IEnumerable<User>> GetAllUsers(int num);
-
         Task<User> GetUserById(Guid userId);
-
-        Task<bool> UpdateUser(User user);
-
+        Task<bool> UpdateUser(User user, int branchId);
         Task<bool> DeleteUser(Guid userId);
-        Task<bool> sendEmail(string email);
+        Task<bool> SendEmail(string email);
+        Task<User> GetAdmin(int role);
     }
 }

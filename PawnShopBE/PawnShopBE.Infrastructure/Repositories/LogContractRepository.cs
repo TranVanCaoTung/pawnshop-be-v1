@@ -21,7 +21,7 @@ namespace PawnShopBE.Infrastructure.Repositories
         {
             return await _dbContext.Set<LogContract>()
             .Where(e => e.ContractId == contractId)
-            .ToListAsync();  
+            .ToListAsync();
         }
         public async Task<IEnumerable<LogContract>> getLogContractsByBranchId(int branchId)
         {
@@ -30,13 +30,13 @@ namespace PawnShopBE.Infrastructure.Repositories
             var logContractList = new List<LogContract>();
             foreach (var contract in contractByBranchId)
             {
-            var logContractByBranchId = await _dbContext.Set<LogContract>()
-                .Where(e => e.ContractId == contract.ContractId && e.LogTime.Month == DateTime.Today.Month)
-                .ToListAsync();
-            foreach(var logContract in logContractByBranchId)
+                var logContractByBranchId = await _dbContext.Set<LogContract>()
+                    .Where(e => e.ContractId == contract.ContractId && e.LogTime.Month == DateTime.Today.Month)
+                    .ToListAsync();
+                foreach (var logContract in logContractByBranchId)
                 {
                     logContractList.Add(logContract);
-                }             
+                }
             }
             return logContractList;
         }

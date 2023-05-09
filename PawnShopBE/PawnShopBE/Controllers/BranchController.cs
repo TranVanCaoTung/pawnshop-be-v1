@@ -49,12 +49,6 @@ namespace PawnShopBE.Controllers
             return (branchDetail == null) ? NotFound(branchDetail) : Ok(branchDetail);
 
         }
-        [HttpGet("getChain")]
-        public async Task<IActionResult> GetBranchChain()
-        {
-            var displayBranch = await _branchService.getDisplayBranch();
-            return (displayBranch == null) ? NotFound() : Ok(displayBranch);
-        }
 
         [HttpGet("getAll/{numPage}")]
         public async Task<IActionResult> GetBranchList(int numPage)

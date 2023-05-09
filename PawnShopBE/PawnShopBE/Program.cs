@@ -130,6 +130,7 @@ builder.Services.AddScoped<ILogContractService, LogContractService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDiaryImgService, DiaryImgService>();
 builder.Services.AddScoped<ILogAssetService, LogAssetService>();
+builder.Services.AddScoped<IUserBranchService, UserBranchService>();
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddCors(options =>

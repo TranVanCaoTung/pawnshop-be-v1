@@ -40,19 +40,18 @@ namespace PawnShopBE.Infrastructure.Helpers
         public DbSet<CustomerRelativeRelationship> CustomerRelativeRelationship { get; set; }
         public DbSet<Kyc> Kyc { get; set; }
         public DbSet<Ransom> Ransom { get; set; }
-        public DbSet<Admin> Admin { get; set; }
         public DbSet<Permission> Permissions { get; set; }
-        public DbSet<UserPermissionGroup> UserPermissionGroups { get; set; }
+        public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<LogContract> LogContracts { get; set; }
         public DbSet<LogAsset> LogAssets { get; set; }
         public DbSet<DiaryImg> DiaryImgs { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-
+        public DbSet<UserBranch> UserBranches { get; set; }
         #endregion
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-       {
+        {
             modelBuilder.Entity<User>(entity =>
             {
                 // Table mapping to db
@@ -60,7 +59,6 @@ namespace PawnShopBE.Infrastructure.Helpers
                 // PK
                 entity.HasKey(u => u.UserId);
                 // Relative
-                entity.HasOne(u => u.Branch).WithMany(b => b.Users).HasForeignKey(u => u.BranchId).IsRequired(false);
                 entity.HasOne(u => u.Role).WithMany(r => r.Users).HasForeignKey(r => r.RoleId).IsRequired(true);
             });
 
@@ -91,7 +89,7 @@ namespace PawnShopBE.Infrastructure.Helpers
                 entity.HasOne(c => c.Customer).WithMany(cus => cus.Contracts).HasForeignKey(c => c.CustomerId).IsRequired(true);
                 entity.HasOne(c => c.Package).WithMany(p => p.Contracts).HasForeignKey(c => c.PackageId).IsRequired(true);
                 entity.HasOne(c => c.Branch).WithMany(p => p.Contracts).HasForeignKey(c => c.BranchId).IsRequired(true);
-                entity.HasOne(c => c.ContractAsset).WithMany(p => p.Contracts).HasForeignKey(c => c.ContractAssetId).IsRequired(true);
+                entity.HasOne(c => c.ContractAsset).WithOne(p => p.Contract).HasForeignKey<Contract>(c => c.ContractAssetId).IsRequired(true);
                 entity.HasOne(c => c.User).WithMany(p => p.Contracts).HasForeignKey(c => c.UserId).IsRequired(true);
             });
 
@@ -112,7 +110,7 @@ namespace PawnShopBE.Infrastructure.Helpers
             {
                 entity.ToTable("Liquidtation");
                 entity.HasKey(li => li.LiquidationId);
-                entity.HasOne(li => li.Contract).WithOne(c => c.Liquidtation).HasForeignKey<Liquidtation>(li => li.ContractId);
+                entity.HasOne(li => li.Contract).WithOne(c => c.Liquidtation).HasForeignKey<Liquidtation>(li => li.ContractId).IsRequired(true);
             });
 
             modelBuilder.Entity<ContractAsset>(entity =>
@@ -171,7 +169,7 @@ namespace PawnShopBE.Infrastructure.Helpers
                 entity.HasOne(j => j.Customer).WithMany(c => c.CustomerRelativeRelationships).HasForeignKey(d => d.CustomerId).IsRequired(true);
             });
 
-            modelBuilder.Entity<Kyc>(entity => 
+            modelBuilder.Entity<Kyc>(entity =>
             {
                 entity.ToTable("Kyc");
                 entity.HasKey("KycId");
@@ -182,15 +180,6 @@ namespace PawnShopBE.Infrastructure.Helpers
                 entity.HasKey(r => r.RansomId);
                 entity.HasOne(r => r.Contract).WithOne(c => c.Ransom).HasForeignKey<Ransom>(r => r.ContractId).IsRequired(true);
 
-            });
-            modelBuilder.Entity<Admin>(entity =>
-            {
-                entity.ToTable("Admin");
-                entity.HasKey(a => a.Id);
-            });
-            modelBuilder.Entity<UserPermissionGroup>(entity =>
-            {
-                entity.HasKey(e => new{e.perId, e.UserId});
             });
             modelBuilder.Entity<LogContract>(entity =>
             {
@@ -216,6 +205,12 @@ namespace PawnShopBE.Infrastructure.Helpers
                 entity.HasKey(n => n.NotificationId);
                 entity.HasOne(b => b.Branch).WithMany(n => n.Notifications).HasForeignKey(n => n.BranchId).IsRequired(true);
             });
+
+            modelBuilder.Entity<UserBranch>(entity =>
+            {
+                entity.ToTable("UserBranch");
+                entity.HasKey(l => new { l.UserId, l.BranchId });
+            });
         }
-    } 
+    }
 }

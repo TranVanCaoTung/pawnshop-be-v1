@@ -4,6 +4,8 @@ using Microsoft.VisualBasic;
 using Mysqlx.Crud;
 using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Data;
+using PawnShopBE.Core.Display;
+using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
 using PawnShopBE.Infrastructure.Helpers;
 using Quartz;
@@ -26,9 +28,10 @@ namespace Services.Services
         private readonly IInteresDiaryService _interesDiaryService;
         private readonly ILogContractService _logContractService;
         private readonly IUserService _userService;
+        private readonly IPermissionService _perService;
         private DateTime lastNotificationTime = DateTime.MinValue;
 
-        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService)
+        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService, IPermissionService perService)
         {
             _contextClass = dbContextClass;
             _contractService = contractService;
@@ -36,6 +39,7 @@ namespace Services.Services
             _interesDiaryService = interesDiaryService;
             _logContractService = logContractService;
             _userService = userService;
+            _perService = perService;
         }
         public async Task Execute(IJobExecutionContext context)
         {
@@ -44,17 +48,7 @@ namespace Services.Services
             {
                 // code to create the notification
                 lastNotificationTime = DateTime.UtcNow;
-            }
-            // Auto Create Account Admin if it null Username: Admin, Password: Admin12345
-            var admin = _contextClass.Admin.SingleOrDefault(p => p.UserName == "Admin");
-            if (admin == null)
-            {
-                admin = new Admin();
-                admin.UserName = "Admin";
-                admin.Password = "Admin12345";
-                admin.Email = "pawnsquantri@gmail.com";
-                await _userService.CreateAdmin(admin);
-            }
+            }      
             // Contracts IN_PROGRESS turn into OVER_DUE 
             var overdueContracts = _contextClass.Contract
                         .Where(c => c.Status == (int)ContractConst.IN_PROGRESS && c.ContractEndDate < DateTime.Today)
@@ -163,7 +157,7 @@ namespace Services.Services
                 await _logContractService.CreateLogContract(logContract);
             }
 
-            
+
             _contextClass.SaveChanges();
         }
     }

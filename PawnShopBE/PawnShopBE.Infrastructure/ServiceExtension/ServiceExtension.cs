@@ -46,6 +46,8 @@ namespace PawnShopBE.Infrastructure.ServiceExtension
             services.AddScoped<IDiaryImgRepository, DiaryImgRepository>();
             services.AddScoped<ILogAssetRepository, LogAssetRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IUserBranchRepository, UserBranchRepository>();
+            
             return services;
         }
     }

@@ -66,8 +66,8 @@ namespace Services.Services
                     ledger.Loan = 0;
                     ledger.Profit = 0;
                     var contractsOfBranch = await _contextClass.Set<Contract>()
-                        .Where(c => c.BranchId == branch.BranchId)
-                        .ToListAsync();
+                                         .Where(c => c.BranchId == branch.BranchId)
+                                         .ToListAsync();
                     foreach (var contract in contractsOfBranch)
                     {
                         var interestDiaryOfMonth = await _interesDiaryService.GetInteresDiariesByContractId(contract.ContractId);

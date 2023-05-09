@@ -16,7 +16,7 @@ namespace Services.Services.IServices
         Task<IEnumerable<Permission>> GetPermission();
         Task<bool> UpdatePermission(Permission permission);
         Task<bool> DeletePermission(int perId);
-        Task<IEnumerable<DisplayPermission>> ShowPermission(UserPermissionDTO user);
+        Task<IEnumerable<DisplayPermission>> ShowPermission(Guid userId);
         Task SavePermission(IEnumerable<DisplayPermission> listPermission);
 
     }

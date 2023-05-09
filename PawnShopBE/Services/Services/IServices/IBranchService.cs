@@ -21,7 +21,6 @@ namespace Services.Services.IServices
         Task<bool> UpdateBranch(int id, BranchRequest branch);
 
         Task<bool> DeleteBranch(int branchId);
-        Task<IEnumerable<DisplayBranch>> getDisplayBranch();
         Task<DisplayBranchDetail> getDisplayBranchDetail(int branchId);
         Task<DisplayBranchDetail> getDisplayBranchYearDetail(int branchId, int year);
 

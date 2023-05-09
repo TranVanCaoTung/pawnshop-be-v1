@@ -18,7 +18,6 @@ namespace PawnShopBE.Core.Models
         public decimal InterestDebt { get; set; }
         public DateTime DueDate { get; set; }
         public DateTime NextDueDate { get; set; }
-        public DateTime? PaidDate { get; set; }
         public int Status { get; set; }
         public string? Description { get; set; }
 

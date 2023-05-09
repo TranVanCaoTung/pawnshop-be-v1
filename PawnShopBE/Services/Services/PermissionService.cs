@@ -28,12 +28,12 @@ namespace Services.Services
             var listGroup = await _unit.UserPermissionGroup.GetAll();
             foreach(var p in listPermission)
             {
-                UserPermissionGroup group= new UserPermissionGroup();
+                UserPermission group= new UserPermission();
                 group.UserId= p.UserId;
-                group.perId = p.PermissionId;
+                group.PerId = p.PermissionId;
                 //check field đã tồn tại hay chưa
                 var result = _unit.UserPermissionGroup.
-                    SingleOrDefault(group,g => g.UserId==group.UserId && g.perId==group.perId);
+                    SingleOrDefault(group,g => g.UserId==group.UserId && g.PerId ==group.PerId);
                 if (result == null)
                 {
                     await _unit.UserPermissionGroup.Add(group);
@@ -47,7 +47,7 @@ namespace Services.Services
             }
         }
 
-        public async Task<IEnumerable<DisplayPermission>> ShowPermission(UserPermissionDTO user)
+        public async Task<IEnumerable<DisplayPermission>> ShowPermission(Guid userId)
         {
             //get list all
             var listPermission = await GetPermission();
@@ -57,19 +57,18 @@ namespace Services.Services
             foreach(var p in listPermission)
             {
                 DisplayPermission permission= new DisplayPermission();
-                permission.PermissionId = p.perId;
-                permission.UserId = user.UserId;
-                permission.NameUser = user.NameUser;
-                permission.NamePermission = p.description;
-                permission.Status = getStatus(listGroup, p.perId, user.UserId);
+                permission.PermissionId = p.PerId;
+                permission.UserId = userId;
+                permission.NamePermission = p.Description;
+                permission.Status = getStatus(listGroup, p.PerId, userId);
                 list.Add(permission);
             }
             return list;
         }
 
-        private bool getStatus(IEnumerable<UserPermissionGroup> listGroup, int perId, Guid userId)
+        private bool getStatus(IEnumerable<UserPermission> listGroup, int perId, Guid userId)
         {
-            var result = (from p in listGroup where p.perId == perId && p.UserId == userId select p).FirstOrDefault();
+            var result = (from p in listGroup where p.PerId == perId && p.UserId == userId select p).FirstOrDefault();
             if (result!=null)
             {
                 return result.Status;
@@ -80,7 +79,7 @@ namespace Services.Services
         public async Task<bool> CreatePermission(Permission permission)
         {
             var listPermisstion = await GetPermission();
-            var checkPermission= from p in listPermisstion where p.description.CompareTo(permission.description) == 0 select p;
+            var checkPermission= from p in listPermisstion where p.Description.CompareTo(permission.Description) == 0 select p;
 
             if (checkPermission.Count()<1)
             {
@@ -97,7 +96,7 @@ namespace Services.Services
 
         public async Task<bool> DeletePermission(int perId)
         {
-            var perDelete = _unit.Permission.SingleOrDefault(_permission, j => j.perId==perId );
+            var perDelete = _unit.Permission.SingleOrDefault(_permission, j => j.PerId==perId );
             if (perDelete != null)
             {
                 _unit.Permission.Delete(perDelete);
@@ -120,11 +119,11 @@ namespace Services.Services
 
         public async Task<bool> UpdatePermission(Permission permission)
         {
-            var perUpdate = _unit.Permission.SingleOrDefault(permission, j => j.perId == permission.perId);
+            var perUpdate = _unit.Permission.SingleOrDefault(permission, j => j.PerId == permission.PerId);
             if (perUpdate != null)
             {
-                perUpdate.namePermission= permission.namePermission;
-                perUpdate.description = permission.description;
+                perUpdate.NamePermission= permission.NamePermission;
+                perUpdate.Description = permission.Description;
                 _unit.Permission.Update(perUpdate);
                 var result = _unit.Save();
                 if (result > 0)

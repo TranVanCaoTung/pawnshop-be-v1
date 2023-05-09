@@ -9,7 +9,6 @@ namespace PawnShopBE.Core.Display
     public class DisplayCustomer
     {
         public Guid customerId { get; set; }
-        public int numerical { get; set; }
         public string nameBranch { get; set; }
         public string FullName { get; set; }
         public string CCCD { get; set; }

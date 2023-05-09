@@ -256,6 +256,7 @@ namespace Services.Services
             if (cccd != null)
             {
                 var customer = await _customerRepository.getCustomerByCCCD(cccd);
+                var kyc = await _kycService.GetKycById(customer.KycId);
                 if (customer != null)
                 {
                     return customer;
@@ -274,7 +275,6 @@ namespace Services.Services
                 var customerId = customer.customerId;
                 // lấy branchName
                 customer.nameBranch = await GetBranchName(customerId, listCustomer);
-                customer.numerical = i++;
             }
             return respone;
         }

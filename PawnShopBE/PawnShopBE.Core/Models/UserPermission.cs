@@ -9,14 +9,16 @@ using System.Threading.Tasks;
 namespace PawnShopBE.Core.Models
 {
     
-    public class UserPermissionGroup
+    public class UserPermission
     {
-        public Guid UserId { get; set; }
-
-        public int perId { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
         [ForeignKey("UserId")]
+        public Guid UserId { get; set; }
+        [ForeignKey("Permission")]
+        public int PerId { get; set; }
         public virtual User User { get; set; }
-        [ForeignKey("perId")]
         public virtual Permission Permission { get; set; }
         public bool Status { get; set; }
 

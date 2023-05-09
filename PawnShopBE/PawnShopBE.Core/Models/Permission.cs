@@ -12,12 +12,12 @@ namespace PawnShopBE.Core.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int perId { get; set; }
+        public int PerId { get; set; }
 
         [StringLength(250)]
-        public string namePermission { get; set; }
+        public string NamePermission { get; set; }
         [StringLength(250)]
-        public string description { get; set; }
+        public string Description { get; set; }
 
     }
 }

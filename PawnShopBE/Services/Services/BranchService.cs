@@ -21,15 +21,17 @@ namespace Services.Services
         private IInteresDiaryService _diary;
         private ILedgerService _ledgerService;
         private IServiceProvider _serviceProvider;
+        private IUserBranchService _userBranchService;
 
         public BranchService(IUnitOfWork unitOfWork, IContractService contract
-           , ILedgerService ledger, IInteresDiaryService diary, IServiceProvider serviceProvider)
+           , ILedgerService ledger, IInteresDiaryService diary, IServiceProvider serviceProvider, IUserBranchService userBranchService)
         {
             _unitOfWork = unitOfWork;
             _contract = contract;
             _ledgerService = ledger;
             _diary = diary;
             _serviceProvider = serviceProvider;
+            _userBranchService = userBranchService;
         }
         public async Task<DisplayBranchDetail> getDisplayBranchDetail(int branchId)
         {
@@ -38,24 +40,24 @@ namespace Services.Services
             if (branch == null)
             {
                 return null;
-            }
+            }       
             // Get all ledger equal to branchId
-            var ledgerList = await _ledgerService.GetLedgersByBranchId(branchId);         
+            var ledgerList = await _ledgerService.GetLedgersByBranchId(branchId);
             // Get all contract that not close and equal to branchId to get total loan
             var contractList = await _contract.GetAllContracts();
             var openContract = from c in contractList
                                where c.Status != (int)ContractConst.CLOSE && c.BranchId == branch.BranchId
-                               select c; 
+                               select c;
 
             var displayBranchDetail = new DisplayBranchDetail();
             displayBranchDetail.BranchId = branch.BranchId;
             displayBranchDetail.BranchName = branch.BranchName;
-            displayBranchDetail.Loan = (long) openContract.Sum(c => c.Loan);
+            displayBranchDetail.Loan = (long)openContract.Sum(c => c.Loan);
             displayBranchDetail.TotalContracts = contractList.Where(c => c.BranchId == branchId).Count();
             displayBranchDetail.OpenContract = openContract.Count();
             displayBranchDetail.CloseContract = displayBranchDetail.TotalContracts - displayBranchDetail.OpenContract;
-            displayBranchDetail.Profit = (long) ledgerList.Sum(l => l.Profit);
-            displayBranchDetail.CurrentFund =(long) (branch.Fund - openContract.Sum(c =>  c.Loan));
+            displayBranchDetail.Profit = (long)ledgerList.Sum(l => l.Profit);
+            displayBranchDetail.CurrentFund = (long)(branch.Fund - openContract.Sum(c => c.Loan));
             return displayBranchDetail;
         }
 
@@ -87,28 +89,6 @@ namespace Services.Services
             return displayBranchDetail;
         }
 
-        public async Task<IEnumerable<DisplayBranch>> getDisplayBranch()
-        {
-            var displayBranchList = new List<DisplayBranch>();
-            var branchList = await GetAllBranch(0);
-            foreach(var branch in branchList)
-            {
-                // Get all contract that not close and equal to branchid to get total loan
-                var contractList = await _contract.GetAllContracts();
-                var openContract = from c in contractList 
-                                   where c.Status != (int)ContractConst.CLOSE && c.BranchId == branch.BranchId 
-                                   select c;
-
-                var displayBranch = new DisplayBranch();
-                displayBranch.BranchId = branch.BranchId;
-                displayBranch.BranchName = branch.BranchName;
-                displayBranch.Address = branch.Address;
-                displayBranch.PhoneNumber = branch.PhoneNumber;
-                displayBranch.CurrentFund = branch.Fund - openContract.Sum(c => c.Loan);
-                displayBranchList.Add(displayBranch);
-            }           
-            return displayBranchList;
-        }
         public async Task<bool> CreateBranch(Branch branch)
         {
             if (branch != null)
@@ -152,7 +132,7 @@ namespace Services.Services
             {
                 return branchList;
             }
-            var result= await _unitOfWork.Branches.TakePage(num,branchList);
+            var result = await _unitOfWork.Branches.TakePage(num, branchList);
             return result;
         }
 
@@ -198,4 +178,3 @@ namespace Services.Services
 }
 
 
-       

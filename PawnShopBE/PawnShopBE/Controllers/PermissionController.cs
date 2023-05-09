@@ -56,16 +56,16 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPost("showpermission")]
-        public async Task<IActionResult> ShowPermission( UserPermissionDTO user)
-        {
-            if (user != null)
-            {
-                var respone = await _perService.ShowPermission(user);
-                return Ok(respone);
-            }
-            return BadRequest();
-        }
+        //[HttpPost("showpermission/userId")]
+        //public async Task<IActionResult> ShowPermission(Guid userId)
+        //{
+        //    if (user != null)
+        //    {
+        //        var respone = await _perService.ShowPermission(user);
+        //        return Ok(respone);
+        //    }
+        //    return BadRequest();
+        //}
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePermission( int id)
         {

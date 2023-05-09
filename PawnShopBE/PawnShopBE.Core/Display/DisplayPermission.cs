@@ -10,7 +10,6 @@ namespace PawnShopBE.Core.Display
     {
         public Guid UserId { get; set; }    
         public int PermissionId { get; set; }
-        public string NameUser { get; set; }
         public string NamePermission { get; set; }
         public bool Status { get; set; }
     }

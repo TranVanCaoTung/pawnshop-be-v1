@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using PawnShopBE.Core.Const;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
@@ -22,48 +23,49 @@ namespace Services.Services
         private IMapper _mapper;
         private DbContextClass _dbContextClass;
         private IUserRepository _userRepository;
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, DbContextClass dbContextClass, IUserRepository userRepository)
+        private IUserBranchService _userBranchService;
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, DbContextClass dbContextClass, IUserRepository userRepository, IUserBranchService userBranchService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _dbContextClass = dbContextClass;
             _userRepository = userRepository;
+            _userBranchService = userBranchService;
         }
-        public async Task<bool> CreateUser(User user)
+        public async Task<bool> CreateUser(UserDTO userDTO)
         {
+            var user = _mapper.Map<User>(userDTO);
             if (user != null)
             {
+
                 user.CreateTime = DateTime.Now;
                 user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-                await _unitOfWork.Users.Add(user);
 
+                // Create User
+                await _unitOfWork.Users.Add(user);
+                
                 var result = _unitOfWork.Save();
 
                 if (result > 0)
+                {
+                    // Create UserBranch
+                    var userBranch = new UserBranch();
+                    userBranch.UserId = user.UserId;
+                    userBranch.BranchId = userDTO.BranchId;
+                    await _userBranchService.CreateUserBranch(userBranch);
                     return true;
-                else
-                    return false;
+                }
+                    
             }
             return false;
         }
 
-        public async Task<bool> CreateAdmin(Admin admin)
-        {
-            if (admin != null)
-            {
-                admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password);  
-                
-                _dbContextClass.Admin.Add(admin);
-                var result = _dbContextClass.SaveChanges();           
-                return (result > 0) ? true: false;       
-            }
-            return false;
-        }
-        public async Task<bool> sendEmail(string email)
+        public async Task<bool> SendEmail(string email)
         {
             try
             {
                 var user = await _userRepository.GetUserByEmail(email);
+                var userBranch =  _dbContextClass.UserBranches.FirstOrDefault(u => u.UserId == user.UserId);
                 if (user == null)
                 {
                     return false;
@@ -80,7 +82,7 @@ namespace Services.Services
                 //set new password
                 user.Password = randomPassword;
                 //update password
-                await UpdateUser(user);
+                await UpdateUser(user, userBranch.BranchId);
 
                 MailMessage mail = new MailMessage();
                 SmtpClient smtp = new SmtpClient("smtp.gmail.com");
@@ -150,7 +152,7 @@ namespace Services.Services
             return null;
         }
 
-        public async Task<bool> UpdateUser(User user)
+        public async Task<bool> UpdateUser(User user, int branchId)
         {
             if (user != null)
             {
@@ -165,8 +167,11 @@ namespace Services.Services
                     userUpdate.Address= user.Address;
                     userUpdate.FullName= user.FullName;
                     userUpdate.Role= user.Role;
-                    userUpdate.Branch= user.Branch;
                     userUpdate.UpdateTime = DateTime.Now;
+                    var userBranch = new UserBranch();
+                    userBranch.UserId = user.UserId;
+                    userBranch.BranchId = branchId;
+                    _userBranchService.UpdateUserBranch(userBranch);
                     _unitOfWork.Users.Update(userUpdate);
 
                     var result = _unitOfWork.Save();
@@ -178,6 +183,13 @@ namespace Services.Services
                 }
             }
             return false;
+        }
+
+        public async Task<User> GetAdmin(int role)
+        {
+            var admin = new User();
+            admin = (role == (int)RoleConst.ADMIN) ? _dbContextClass.User.FirstOrDefault(a => a.RoleId == role) : null;
+            return admin;
         }
     }
 }

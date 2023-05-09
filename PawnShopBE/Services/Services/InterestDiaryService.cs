@@ -122,7 +122,7 @@ namespace Services.Services
             try
             {
                 var diaryUpdate = await _unit.InterestDiaries.GetById(id);
-                if (diaryUpdate == null) return false;          
+                if (diaryUpdate == null) return false;
                 // Check current PaidMoney
                 if (paidMoney > diaryUpdate.TotalPay || (paidMoney + diaryUpdate.PaidMoney) > diaryUpdate.TotalPay)
                 {
@@ -157,7 +157,7 @@ namespace Services.Services
                     // Log Contract when onTime
                     var contractJoinUserJoinCustomer = from contract in _dbContextClass.Contract
                                                        join customer in _dbContextClass.Customer
-                                                       on contract.CustomerId equals customer.CustomerId
+                                                       on contract.CustomerId equals customer.CustomerId                                                    
                                                        join user in _dbContextClass.User
                                                        on contract.UserId equals user.UserId
                                                        where contract.ContractId == diaryUpdate.ContractId
@@ -186,9 +186,9 @@ namespace Services.Services
                     }
                     logContract.LogTime = DateTime.Now;
                     await _logContractService.CreateLogContract(logContract);
-                   
-                        await _diaryImgService.CreateDiariesImg(id, proofImg);
-                
+
+                    await _diaryImgService.CreateDiariesImg(id, proofImg);
+
 
 
                     return true;

@@ -21,16 +21,16 @@ namespace PawnShopBE.Core.Models
         public int Status { get; set; }
 
         //relationship
-        public ICollection<User>? Users { get; set; }
         public ICollection<Contract>? Contracts { get; set; }
         public ICollection<Ledger>? Ledgers { get; set; }
         public ICollection<Notification> Notifications { get; set; }
+        public ICollection<UserBranch> UserBranches { get; set; }
         public Branch()
         {
-            Users = new List<User>();
             Contracts = new List<Contract>();
             Ledgers = new List<Ledger>();
             Notifications = new List<Notification>();
+            UserBranches = new List<UserBranch>();
         }
     }
 }

@@ -25,83 +25,45 @@ namespace PawnShopBE.Controllers
         [HttpPost("recoveryPassword/{email}")]
         public async Task<IActionResult> recoverPass(string email)
         {
-            var respone = await _userService.sendEmail(email);
-            if (respone)
-            {
-                return Ok();
-            }
-            return BadRequest();
+            var respone = await _userService.SendEmail(email);
+            return (respone) ? Ok(respone) : BadRequest(respone);
         }
 
 
         [HttpPost("createUser")]
         public async Task<IActionResult> CreateUser(UserDTO request)
         {
-            var user = _mapper.Map<User>(request);
-            var response = await _userService.CreateUser(user);
-
-            if (response)
-            {
-                return Ok(response);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            var response = await _userService.CreateUser(request);
+            return (response) ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet("getAll/{numPage}")]
         public async Task<IActionResult> getUserList(int numPage)
         {
             var userList = await _userService.GetAllUsers(numPage);
-            if (userList == null)
-            {
-                return NotFound();
-            }
-            return Ok(userList);
+            return (userList != null) ? Ok(userList) : NotFound();
         }
 
         [HttpGet("getUserById/{userId:guid}")]
         public async Task<IActionResult> GetUserById(Guid userId)
         {
             var user = await _userService.GetUserById(userId);
-
             return (user != null) ? Ok(user) : BadRequest();
         }
 
         [HttpPut("updateUser")]
         public async Task<IActionResult> UpdateUser(UserDTO request)
         {
-
-            if (request != null)
-            {
-                var user = _mapper.Map<User>(request);
-                var response = await _userService.UpdateUser(user);
-                if (response)
-                {
-                    return Ok(response);
-                }
-                return BadRequest();
-            }
-            else
-            {
-                return BadRequest();
-            }
+            var user = _mapper.Map<User>(request);
+            var response = await _userService.UpdateUser(user, request.BranchId);
+            return (response) ? Ok(response) : BadRequest(response);
         }
 
         [HttpDelete("deleteUser/{userId:guid}")]
         public async Task<IActionResult> DeleteUser(Guid userId)
         {
             var isUserCreated = await _userService.DeleteUser(userId);
-
-            if (isUserCreated)
-            {
-                return Ok(isUserCreated);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            return (isUserCreated) ? Ok(isUserCreated) : BadRequest();
         }
 
     }

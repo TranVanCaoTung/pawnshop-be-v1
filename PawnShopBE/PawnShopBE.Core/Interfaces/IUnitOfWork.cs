@@ -32,6 +32,7 @@ namespace PawnShopBE.Core.Interfaces
         IDiaryImgRepository DiaryImgs { get; }
         ILogAssetRepository LogAssets { get; }
         INotificationRepository Notifications { get; }
+        IUserBranchRepository UserBranchs { get; }
         int Save();
         Task<int> SaveList();
     }

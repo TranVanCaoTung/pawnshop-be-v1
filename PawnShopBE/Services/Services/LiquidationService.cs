@@ -42,7 +42,7 @@ namespace Services.Services
                 liquidation.ContractId = contractId;
                 liquidation.Description = "Thanh lý";
                 oldContract.ActualEndDate = DateTime.Now;
-                oldContract.Status = (int) ContractConst.CLOSE;
+                oldContract.Status = (int)ContractConst.CLOSE;
 
                 // Close Log Contract
                 var contractJoinUserJoinCustomer = from getcontract in _dbContextClass.Contract

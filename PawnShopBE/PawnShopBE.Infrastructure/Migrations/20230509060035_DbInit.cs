@@ -12,17 +12,6 @@ namespace PawnShopBE.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Admin",
-                columns: table => new
-                {
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Branch",
                 columns: table => new
                 {
@@ -69,7 +58,9 @@ namespace PawnShopBE.Infrastructure.Migrations
                     Limitation = table.Column<int>(type: "int", nullable: false),
                     PunishDay1 = table.Column<int>(type: "int", nullable: false),
                     PunishDay2 = table.Column<int>(type: "int", nullable: false),
-                    LiquitationDay = table.Column<int>(type: "int", nullable: false)
+                    LiquitationDay = table.Column<int>(type: "int", nullable: false),
+                    InterestDiaryPenalty = table.Column<int>(type: "int", nullable: false),
+                    RansomPenalty = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,14 +86,14 @@ namespace PawnShopBE.Infrastructure.Migrations
                 name: "Permissions",
                 columns: table => new
                 {
-                    perId = table.Column<int>(type: "int", nullable: false)
+                    PerId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    namePermission = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
+                    NamePermission = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Permissions", x => x.perId);
+                    table.PrimaryKey("PK_Permissions", x => x.PerId);
                 });
 
             migrationBuilder.CreateTable(
@@ -157,15 +148,11 @@ namespace PawnShopBE.Infrastructure.Migrations
                     LedgerId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BranchId = table.Column<int>(type: "int", nullable: false),
-                    Fund = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ReceivedPrincipal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RecveivedInterest = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Loan = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    LiquidationMoney = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Balance = table.Column<long>(type: "bigint", nullable: false),
+                    Revenue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Profit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     FromDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ToDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    ToDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -179,23 +166,20 @@ namespace PawnShopBE.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Money",
+                name: "Notification",
                 columns: table => new
                 {
-                    MoneyId = table.Column<int>(type: "int", nullable: false)
+                    NotificationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Fund = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     BranchId = table.Column<int>(type: "int", nullable: false),
-                    DateCreate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MoneyInput = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    Header = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Money", x => x.MoneyId);
+                    table.PrimaryKey("PK_Notification", x => x.NotificationId);
                     table.ForeignKey(
-                        name: "FK_Money_Branch_BranchId",
+                        name: "FK_Notification_Branch_BranchId",
                         column: x => x.BranchId,
                         principalTable: "Branch",
                         principalColumn: "BranchId",
@@ -215,7 +199,8 @@ namespace PawnShopBE.Infrastructure.Migrations
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Point = table.Column<int>(type: "int", nullable: false)
+                    Point = table.Column<int>(type: "int", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -254,13 +239,12 @@ namespace PawnShopBE.Infrastructure.Migrations
                 {
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false),
-                    BranchId = table.Column<int>(type: "int", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false)
@@ -268,11 +252,6 @@ namespace PawnShopBE.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_User", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_User_Branch_BranchId",
-                        column: x => x.BranchId,
-                        principalTable: "Branch",
-                        principalColumn: "BranchId");
                     table.ForeignKey(
                         name: "FK_User_Role_RoleId",
                         column: x => x.RoleId,
@@ -382,24 +361,50 @@ namespace PawnShopBE.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserPermissionGroups",
+                name: "UserBranch",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    perId = table.Column<int>(type: "int", nullable: false),
+                    BranchId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserBranch", x => new { x.UserId, x.BranchId });
+                    table.ForeignKey(
+                        name: "FK_UserBranch_Branch_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branch",
+                        principalColumn: "BranchId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserBranch_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserPermissions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PerId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserPermissionGroups", x => new { x.perId, x.UserId });
+                    table.PrimaryKey("PK_UserPermissions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserPermissionGroups_Permissions_perId",
-                        column: x => x.perId,
+                        name: "FK_UserPermissions_Permissions_PerId",
+                        column: x => x.PerId,
                         principalTable: "Permissions",
-                        principalColumn: "perId",
+                        principalColumn: "PerId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserPermissionGroups_User_UserId",
+                        name: "FK_UserPermissions_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "UserId",
@@ -468,6 +473,30 @@ namespace PawnShopBE.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LogAsset",
+                columns: table => new
+                {
+                    logAssetId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    contractAssetId = table.Column<int>(type: "int", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WareHouseName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImportImg = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExportImg = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LogAsset", x => x.logAssetId);
+                    table.ForeignKey(
+                        name: "FK_LogAsset_ContractAsset_contractAssetId",
+                        column: x => x.contractAssetId,
+                        principalTable: "ContractAsset",
+                        principalColumn: "ContractAssetId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InterestDiary",
                 columns: table => new
                 {
@@ -481,10 +510,8 @@ namespace PawnShopBE.Infrastructure.Migrations
                     InterestDebt = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NextDueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PaidDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ProofImg = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -572,6 +599,27 @@ namespace PawnShopBE.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "DiaryImg",
+                columns: table => new
+                {
+                    DiaryImgId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    InterestDiaryId = table.Column<int>(type: "int", nullable: false),
+                    ProofImg = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaidDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiaryImg", x => x.DiaryImgId);
+                    table.ForeignKey(
+                        name: "FK_DiaryImg_InterestDiary_InterestDiaryId",
+                        column: x => x.InterestDiaryId,
+                        principalTable: "InterestDiary",
+                        principalColumn: "InterestDiaryId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Attribute_PawnableProductId",
                 table: "Attribute",
@@ -585,7 +633,8 @@ namespace PawnShopBE.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Contract_ContractAssetId",
                 table: "Contract",
-                column: "ContractAssetId");
+                column: "ContractAssetId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Contract_CustomerId",
@@ -629,6 +678,11 @@ namespace PawnShopBE.Infrastructure.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DiaryImg_InterestDiaryId",
+                table: "DiaryImg",
+                column: "InterestDiaryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InterestDiary_ContractId",
                 table: "InterestDiary",
                 column: "ContractId");
@@ -650,13 +704,18 @@ namespace PawnShopBE.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_LogAsset_contractAssetId",
+                table: "LogAsset",
+                column: "contractAssetId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LogContract_ContractId",
                 table: "LogContract",
                 column: "ContractId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Money_BranchId",
-                table: "Money",
+                name: "IX_Notification_BranchId",
+                table: "Notification",
                 column: "BranchId");
 
             migrationBuilder.CreateIndex(
@@ -666,27 +725,29 @@ namespace PawnShopBE.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_User_BranchId",
-                table: "User",
-                column: "BranchId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_User_RoleId",
                 table: "User",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserPermissionGroups_UserId",
-                table: "UserPermissionGroups",
+                name: "IX_UserBranch_BranchId",
+                table: "UserBranch",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserPermissions_PerId",
+                table: "UserPermissions",
+                column: "PerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserPermissions_UserId",
+                table: "UserPermissions",
                 column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Admin");
-
             migrationBuilder.DropTable(
                 name: "Attribute");
 
@@ -697,7 +758,7 @@ namespace PawnShopBE.Infrastructure.Migrations
                 name: "DependentPeople");
 
             migrationBuilder.DropTable(
-                name: "InterestDiary");
+                name: "DiaryImg");
 
             migrationBuilder.DropTable(
                 name: "Job");
@@ -709,10 +770,13 @@ namespace PawnShopBE.Infrastructure.Migrations
                 name: "Liquidtation");
 
             migrationBuilder.DropTable(
+                name: "LogAsset");
+
+            migrationBuilder.DropTable(
                 name: "LogContract");
 
             migrationBuilder.DropTable(
-                name: "Money");
+                name: "Notification");
 
             migrationBuilder.DropTable(
                 name: "Ransom");
@@ -721,13 +785,22 @@ namespace PawnShopBE.Infrastructure.Migrations
                 name: "RefeshToken");
 
             migrationBuilder.DropTable(
-                name: "UserPermissionGroups");
+                name: "UserBranch");
+
+            migrationBuilder.DropTable(
+                name: "UserPermissions");
+
+            migrationBuilder.DropTable(
+                name: "InterestDiary");
+
+            migrationBuilder.DropTable(
+                name: "Permissions");
 
             migrationBuilder.DropTable(
                 name: "Contract");
 
             migrationBuilder.DropTable(
-                name: "Permissions");
+                name: "Branch");
 
             migrationBuilder.DropTable(
                 name: "ContractAsset");
@@ -749,9 +822,6 @@ namespace PawnShopBE.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Kyc");
-
-            migrationBuilder.DropTable(
-                name: "Branch");
 
             migrationBuilder.DropTable(
                 name: "Role");

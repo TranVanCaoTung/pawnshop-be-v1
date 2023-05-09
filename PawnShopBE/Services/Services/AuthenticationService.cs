@@ -4,17 +4,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Data;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Core.Responses;
 using PawnShopBE.Infrastructure.Helpers;
 using Services.Services.IServices;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 
@@ -27,9 +32,9 @@ namespace Services.Services
         //private UserManager<User> _userManager;
         //private SignInManager<User> _signInManager;
 
-       
+
         public AuthenticationService(DbContextClass context, IOptionsMonitor<Appsetting> optionsMonitor)
-            //,UserManager<User> userManager, SignInManager<User> signInManager)
+        //,UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _context = context;
             _appsetting = optionsMonitor.CurrentValue;
@@ -38,65 +43,34 @@ namespace Services.Services
         }
         public async Task<bool> Login(Login user)
         {
-            //var userName = await _userManager.FindByNameAsync(user.userName);
-            //if(userName == null) return false;
-
-            //var result = await _signInManager.PasswordSignInAsync(userName,user.password,user.remember,true);
-            //if(!result.Succeeded) return false;
             return true;
         }
         public async Task<IEnumerable<RefeshToken>> getAllToken()
         {
-            var result=await _context.Set<RefeshToken>().ToListAsync();
+            var result = await _context.Set<RefeshToken>().ToListAsync();
             return result;
         }
-        public async Task<TokenModel> GenerateToken(User user,Admin admin)
+        public async Task<TokenModel> GenerateToken(UserRepsonse user)
         {
             var jwtToken = new JwtSecurityTokenHandler();
-            var secretKeyByte = Encoding.UTF8.GetBytes(_appsetting.SecretKey);
-            SecurityTokenDescriptor tokenDescription;
-            if (user != null)
-            {
-                //token for user
-               tokenDescription = new SecurityTokenDescriptor
+            var secretKeyByte = Encoding.UTF8.GetBytes(_appsetting.SecretKey);              
+            //token for user
+            var tokenDescription = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new[]
-                    {
+                 {
                     new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                    new Claim("Email",user.Email),
-                    new Claim("Name",user.FullName),
-                    new Claim("BranchId",user.BranchId.ToString()),
-                    new Claim("UserId",user.UserId.ToString())
-                }),
+                  
+                    new Claim("UserId", string.Join(",", user.UserId)),
+                    new Claim("BranchIds", string.Join(",", user.BranchIds)),
 
+                }),
                     Expires = DateTime.UtcNow.AddHours(2),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),
                     SecurityAlgorithms.HmacSha512Signature)
                 };
-                
-            }
-            else
-            {
-                var branchList = await _context.Branch.ToListAsync();
-                var firstBranch = branchList.FirstOrDefault();
-                //token for admin
-                tokenDescription = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new[]
-                    {
-                    new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-                    new Claim("Email",admin.Email),
-                    new Claim("Name",admin.UserName),
-                    new Claim("BranchId",firstBranch.BranchId.ToString()),
-                    new Claim("UserId",admin.Id.ToString())
-                }),
 
-                    Expires = DateTime.UtcNow.AddHours(2),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyByte),
-                    SecurityAlgorithms.HmacSha512Signature)
-                };
-               
-            }
+           
             //create Token
             var token = jwtToken.CreateToken(tokenDescription);
             var accessToken = jwtToken.WriteToken(token);
@@ -104,22 +78,7 @@ namespace Services.Services
             {
                 AccessToken = accessToken
             };
-            //var resfulToken = GenerateRefeshToken();
-            //save data
-            //var refeshTokenEntity = new RefeshToken
-            //{
-            //    Id = Guid.NewGuid(),
-            //    JwtID = token.Id,
-            //    Token = resfulToken,
-            //    IsUsed = false,
-            //    IsRevoked = false,
-            //    IssuedAt = DateTime.UtcNow,
-            //    ExpiredAt = DateTime.UtcNow.AddHours(2),
-            //};
-
-            //await _context.AddAsync(refeshTokenEntity);
-            //await _context.SaveChangesAsync();
-            //accessToken ="Bearer "+accessToken;
+     
         }
         private string GenerateRefeshToken()
         {
@@ -134,16 +93,16 @@ namespace Services.Services
         //giải mã token
         public ClaimsPrincipal EncrypToken(string token)
         {
-            var tokenHandler =new JwtSecurityTokenHandler();
+            var tokenHandler = new JwtSecurityTokenHandler();
             //Decode JWT
             var claims = tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appsetting.SecretKey)),
-                ValidateIssuer=false,
-                ValidateAudience=false,
-                ClockSkew=TimeSpan.Zero
-            },out SecurityToken validatedToken);
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
             //Access the claim 
             return claims;
         }
