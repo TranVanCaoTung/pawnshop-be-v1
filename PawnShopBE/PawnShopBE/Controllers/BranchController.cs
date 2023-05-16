@@ -67,30 +67,15 @@ namespace PawnShopBE.Controllers
         [HttpPut("updateBranch/{id}")]
         public async Task<IActionResult> UpdateBranch(int id, BranchRequest request)
         {
-            if (id != null)
-            {
-                // var branch = _mapper.Map<Branch>(request);
-                var response = await _branchService.UpdateBranch(id, request);
-                if (response)
-                {
-                    return Ok(response);
-                }
-            }
-            return BadRequest();
+            var response = await _branchService.UpdateBranch(id, request);
+            return (response) ? Ok(response) : BadRequest();
         }
         [HttpDelete("deleteBranch/{id}")]
         public async Task<IActionResult> DeleteBranch(int id)
         {
             var isBranchCreated = await _branchService.DeleteBranch(id);
 
-            if (isBranchCreated)
-            {
-                return Ok(isBranchCreated);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            return (isBranchCreated) ? Ok(isBranchCreated) : BadRequest(isBranchCreated);
         }
     }
 }

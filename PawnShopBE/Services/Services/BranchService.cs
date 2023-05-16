@@ -22,9 +22,11 @@ namespace Services.Services
         private ILedgerService _ledgerService;
         private IServiceProvider _serviceProvider;
         private IUserBranchService _userBranchService;
+        private IUserService _userService;
+        
 
         public BranchService(IUnitOfWork unitOfWork, IContractService contract
-           , ILedgerService ledger, IInteresDiaryService diary, IServiceProvider serviceProvider, IUserBranchService userBranchService)
+           , ILedgerService ledger, IInteresDiaryService diary, IServiceProvider serviceProvider, IUserBranchService userBranchService, IUserService userService)
         {
             _unitOfWork = unitOfWork;
             _contract = contract;
@@ -32,6 +34,7 @@ namespace Services.Services
             _diary = diary;
             _serviceProvider = serviceProvider;
             _userBranchService = userBranchService;
+            _userService = userService;
         }
         public async Task<DisplayBranchDetail> getDisplayBranchDetail(int branchId)
         {
@@ -95,13 +98,18 @@ namespace Services.Services
             {
                 branch.CreateDate = DateTime.Now;
                 await _unitOfWork.Branches.Add(branch);
-
                 var result = _unitOfWork.Save();
 
                 if (result > 0)
-                    return true;
-                else
-                    return false;
+                {
+                    // Add userBranch for admin when create new branch
+                    var userBranch = new UserBranch();
+                    var admin = await _userService.GetAdmin(1);
+                    userBranch.BranchId = branch.BranchId;
+                    userBranch.UserId = admin.UserId;
+                    await _userBranchService.CreateUserBranch(userBranch);
+                    return true;              
+                }
             }
             return false;
         }

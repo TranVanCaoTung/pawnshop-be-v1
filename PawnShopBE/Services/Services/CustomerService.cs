@@ -1,9 +1,12 @@
 ﻿using Azure;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.EntityFrameworkCore;
 using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Display;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Infrastructure.Helpers;
 using Services.Services.IServices;
 using System;
 using System.Collections.Generic;
@@ -24,16 +27,11 @@ namespace Services.Services
         private readonly IJobService _job;
         private readonly ICustomerRelativeService _relative;
         private readonly IDependentService _dependent;
-
-
-        public CustomerService(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
+        private DbContextClass _dbContextClass;
 
         public CustomerService(IUnitOfWork unitOfWork, IKycService kycService, ICustomerRepository customerRepository, IContractService contract,
            IBranchService branch, IJobService job, ICustomerRelativeService relativeService,
-           IDependentService dependent)
+           IDependentService dependent, DbContextClass dbContextClass)
         {
             _unitOfWork = unitOfWork;
             _kycService = kycService;
@@ -43,6 +41,7 @@ namespace Services.Services
             _job = job;
             _relative = relativeService;
             _dependent = dependent;
+            _dbContextClass = dbContextClass;
         }
 
         public async Task<Relative_Job_DependentDTO> getRelative(Guid idCus)
@@ -265,34 +264,6 @@ namespace Services.Services
             return null;
         }
 
-        public async Task<IEnumerable<DisplayCustomer>> getCustomerHaveBranch(
-            IEnumerable<DisplayCustomer> respone, IEnumerable<Customer> listCustomer)
-        {
-            int i = 1;
-            foreach (var customer in respone)
-            {
-                // lấy customer id
-                var customerId = customer.customerId;
-                // lấy branchName
-                customer.nameBranch = await GetBranchName(customerId, listCustomer);
-            }
-            return respone;
-        }
-        private async Task<string> GetBranchName(Guid customerId, IEnumerable<Customer> listCustomer)
-        {
-            //lấy danh sách contract
-            var listContract = await _contract.GetAllContracts(0);
-            // lấy branch id mà customer đang ở
-            var branchtId = (listCustomer.Join(listContract, p => p.CustomerId, c => c.CustomerId
-                    , (p, c) => { return c.BranchId; })).FirstOrDefault();
-            // lấy danh sách branch
-            var listBranch = await _branch.GetAllBranch(0);
-            // lấy branchname
-            var branchName = (listContract.Join(listBranch, c => c.BranchId, b => b.BranchId,
-                (c, b) => { return b.BranchName; })).FirstOrDefault();
-            var name = branchName.ToString();
-            return name;
-        }
         public async Task<Customer> GetCustomerById(Guid idCus)
         {
             if (idCus != null)
@@ -357,9 +328,6 @@ namespace Services.Services
                 }
             }
             return false;
-        }
-
-       
-
+        }     
     }
 }

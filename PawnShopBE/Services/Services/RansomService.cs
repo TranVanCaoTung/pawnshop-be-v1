@@ -54,7 +54,7 @@ namespace Services.Services
                 ransom.ProofImg = null;
                 ransom.Penalty = ransom.Payment * (package.RansomPenalty * (decimal)0.01);
                 ransom.TotalPay = contract.Loan + ransom.Penalty;
-
+                 
                 await _unitOfWork.Ransoms.Add(ransom);
 
                 var result = _unitOfWork.Save();
@@ -106,7 +106,7 @@ namespace Services.Services
                     logContract.Debt = contract.Loan;
                     logContract.Paid = contract.Loan;
                     logContract.LogTime = DateTime.Now;
-                    logContract.Description = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                    logContract.Description = "Kết thúc hợp đồng với số tiền gốc nhận lại " + ransom.PaidMoney.ToString() + " VND.";
                     logContract.EventType = (int)LogContractConst.CLOSE_CONTRACT;
                     await _logContractService.CreateLogContract(logContract);
                     return true;

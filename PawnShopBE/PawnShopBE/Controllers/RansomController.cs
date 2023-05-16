@@ -29,35 +29,20 @@ namespace PawnShopBE.Controllers
         public async Task<IActionResult> GetAllRansom()
         {
             var respone = await _ranSomeservices.GetRansom();
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
         [HttpGet("ransombyid/{contractId}")]
         public async Task<IActionResult> ransombyContractId( int contractId)
         {
-
             var response = await _ranSomeservices.GetRansomByContractId(contractId);
-            if (response!= null)
-            {
-                return Ok(response);
-            }
-
-            return BadRequest();
+            return (response!= null) ? Ok(response) : BadRequest(response);
         }
 
         [HttpPut("saveransom/{ransomId}")]
         public async Task<IActionResult> SaveRansom(int ransomId, string proofImg)
         {
             var response = await _ranSomeservices.SaveRansom(ransomId, proofImg);
-            if (response != null)
-            {
-                return Ok("Save Success");
-            }
-
-            return BadRequest();
+            return (response) ? Ok(response) : BadRequest(response);
         }
     }
 }

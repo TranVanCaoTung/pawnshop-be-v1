@@ -8,14 +8,12 @@ namespace PawnShopBE.Core.Display
 {
     public class DisplayNotification
     {
+        public int NotificationId { get; set; }
         public int ContractId { get; set; }
-        public string ContractCode { get; set; }
-        public string CustomerName { get; set; }
-        public string CommodityCode { get; set; }
-        public string ContractAssetName { get; set; }
-        public decimal TotalPay { get; set; }
-        public DateTime ContractStartDate { get; set; }
-        public DateTime ContractEndDate { get; set; }
-        public string Description { get; set; }
+        public string Header { get; set; }
+        public string Content { get; set; }
+        public int Type { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public bool IsRead { get; set; }
     }
 }

@@ -175,14 +175,23 @@ namespace Services.Services
                         logContract.CustomerName = row.CustomerName;
                     }
                     logContract.Debt = diaryUpdate.TotalPay;
-                    logContract.Paid = diaryUpdate.PaidMoney;
-                    logContract.Description = diaryUpdate.NextDueDate.ToString("dd/MM/yyyy HH:mm");
-                    logContract.EventType = (diaryUpdate.TotalPay == diaryUpdate.PaidMoney) ? (int)LogContractConst.INTEREST_PAID : (int)LogContractConst.INTEREST_NOT_PAID;
+                    logContract.Paid = diaryUpdate.PaidMoney;          
+                    // Trả tiền lãi đủ
+                    if (diaryUpdate.TotalPay == diaryUpdate.PaidMoney)
+                    {
+                        logContract.EventType = (int)LogContractConst.INTEREST_PAID;
+                        logContract.Description = "Tiền lãi kỳ " + diaryUpdate.NextDueDate.ToString("dd/MM/yyyy") + " đã thanh toán đủ số tiền "  + logContract.Paid.ToString() + " VND.";
+                    }
+
+                    // Trả tiền lãi vẫn còn chưa đủ 
                     if (diaryUpdate.Status == (int)InterestDiaryConsts.DEBT || diaryUpdate.PaidMoney < paidMoney)
                     {
                         logContract.EventType = (int)LogContractConst.INTEREST_DEBT;
                         logContract.Debt = diaryUpdate.InterestDebt;
                         logContract.Paid = paidMoney;
+                        logContract.Description = "Tiền lãi kỳ " + diaryUpdate.NextDueDate.ToString("dd/MM/yyyy") + 
+                                                  " đã trả " + logContract.Paid.ToString() + " VND. " + 
+                                                  "Còn nợ số tiền " + logContract.Debt.ToString() + " VND.";
                     }
                     logContract.LogTime = DateTime.Now;
                     await _logContractService.CreateLogContract(logContract);

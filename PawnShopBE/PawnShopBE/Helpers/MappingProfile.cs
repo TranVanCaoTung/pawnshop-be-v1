@@ -69,17 +69,17 @@ namespace PawnShopBE.Helpers
                 dest => dest.Image,
                 opt => opt.MapFrom(src => src.AssetImg));
 
-            // Mapping from ContractAssetDTO to ContractAsset
-            CreateMap<ContractAssetDTO, ContractAsset>()
-                .ForMember(
-                dest => dest.ContractAssetName,
-                opt => opt.MapFrom(src => src.ContractAssetName))
-                .ForMember(
-                dest => dest.Description,
-                opt => opt.MapFrom(src => src.Description))
-                .ForMember(
-                dest => dest.PawnableProductId,
-                opt => opt.MapFrom(src => src.PawnableProductId));
+            //// Mapping from ContractAssetDTO to ContractAsset
+            //CreateMap<ContractAssetDTO, ContractAsset>()
+            //    .ForMember(
+            //    dest => dest.ContractAssetName,
+            //    opt => opt.MapFrom(src => src.ContractAssetName))
+            //    .ForMember(
+            //    dest => dest.Description,
+            //    opt => opt.MapFrom(src => src.Description))
+            //    .ForMember(
+            //    dest => dest.PawnableProductId,
+            //    opt => opt.MapFrom(src => src.PawnableProductId));
 
             // Mapping from ContractDTO to Contract
             CreateMap<ContractDTO, Contract>()

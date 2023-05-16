@@ -25,7 +25,6 @@ namespace Services.Services
         }
         public async Task SavePermission(IEnumerable<DisplayPermission> listPermission)
         {
-            var listGroup = await _unit.UserPermissionGroup.GetAll();
             foreach(var p in listPermission)
             {
                 UserPermission group= new UserPermission();
@@ -33,9 +32,10 @@ namespace Services.Services
                 group.PerId = p.PermissionId;
                 //check field đã tồn tại hay chưa
                 var result = _unit.UserPermissionGroup.
-                    SingleOrDefault(group,g => g.UserId==group.UserId && g.PerId ==group.PerId);
+                    SingleOrDefault(group,g => g.UserId == group.UserId && g.PerId == group.PerId);
                 if (result == null)
                 {
+                    group.Status = true;
                     await _unit.UserPermissionGroup.Add(group);
                 }
                 else

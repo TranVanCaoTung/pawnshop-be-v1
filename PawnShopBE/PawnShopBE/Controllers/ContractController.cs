@@ -22,13 +22,9 @@ namespace PawnShopBE.Controllers
     {
         private readonly IContractService _contractService;
         private readonly IContractAssetService _contractAssetService;
-
         private readonly IMapper _mapper;
 
-        public ContractController(
-            IContractService contractService,
-            IContractAssetService contractAssetService,
-            IMapper mapper)
+        public ContractController(IContractService contractService, IContractAssetService contractAssetService, IMapper mapper)
         {
             _contractService = contractService;
             _contractAssetService = contractAssetService;

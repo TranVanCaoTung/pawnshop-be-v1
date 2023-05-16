@@ -76,6 +76,7 @@ namespace Services.Services
             if (contractAssetUpdate != null)
             {
                 contractAssetUpdate.WarehouseId = contractAsset.WarehouseId;
+                contractAssetUpdate.Status = contractAsset.Status;
                 _unitOfWork.ContractAssets.Update(contractAssetUpdate);
                 var result = _unitOfWork.Save();
                 if (result > 0)

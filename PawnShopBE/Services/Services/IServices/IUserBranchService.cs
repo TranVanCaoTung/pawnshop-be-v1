@@ -12,6 +12,7 @@ namespace Services.Services.IServices
         Task<bool> CreateUserBranch(UserBranch userBranch);
         Task<bool> UpdateUserBranch(UserBranch userBranch);
         Task<UserBranch> GetUserBranchById(int id);
+        Task<IEnumerable<UserBranch>> GetUserBranchByBranchId(int branchId);
         Task<IEnumerable<UserBranch>> GetAllUserBranches();
 
     }

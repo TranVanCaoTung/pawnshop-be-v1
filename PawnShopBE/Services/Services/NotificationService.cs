@@ -16,35 +16,29 @@ namespace Services.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly IInteresDiaryService _interesDiaryService;
-        private readonly DbContextClass _dbContextClass;
-        public NotificationService(IInteresDiaryService interesDiaryService, DbContextClass dbContextClass)
-        {
-            _interesDiaryService = interesDiaryService;
+        private DbContextClass _dbContextClass;
+        private IUnitOfWork _unitOfWork;
+
+        public NotificationService(DbContextClass dbContextClass, IUnitOfWork unitOfWork)
+        {           
             _dbContextClass = dbContextClass;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<bool> CreateNotification(int branchId)
+        public async Task<bool> UpdateNotification(int notificationId, bool isRead)
         {
-        //    _dbContextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary ON;");
-        //    interestDiaries.Add(interestDiary);
-        //    await _unit.InterestDiaries.AddList(interestDiaries);
-        //    _dbContextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary OFF;");
-
-        //}
-        //result = await _unit.SaveList();
-
-        //        if (result > 0)
-        //        {
-        //            return true;
-        //        }
+            var notification = _dbContextClass.Notifications.FirstOrDefault(x => x.NotificationId == notificationId);
+            if (notification != null)
+            {
+                notification.IsRead = isRead;
+                _unitOfWork.Notifications.Update(notification);
+                var result = _unitOfWork.Save();
+                if (result > 0)
+                {
+                    return true;
+                }
+            }
             return false;
-        }
-
-        public async Task<IEnumerable<DisplayNotification>> NotificationList(int branchId)
-        {
-            var notifiList = new List<DisplayNotification>();
-            return notifiList;
         }
     }
 }

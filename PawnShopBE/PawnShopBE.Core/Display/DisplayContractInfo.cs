@@ -34,5 +34,8 @@ namespace PawnShopBE.Core.Display
         public decimal TotalProfit { get; set; }
         public decimal TotalRecived { get; set; }
         public string WarehouseName { get; set; }
+        public decimal InterestPaid { get; set; }
+        public decimal InterestDebt { get; set; }
+        public int Status { get; set; }
     }
 }

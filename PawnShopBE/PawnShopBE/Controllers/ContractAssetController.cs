@@ -25,11 +25,7 @@ namespace PawnShopBE.Controllers
         [HttpGet("getAll")]
         public async Task<IActionResult> GetAllContractAsset() {
             var respone =await _contractAssetService.GetAllContractAssets();
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone) : BadRequest();
         }
         
         [HttpPost("createContractAsset")]
@@ -37,43 +33,27 @@ namespace PawnShopBE.Controllers
         {
             var contractAssetMapper = _mapper.Map<ContractAsset>(contractAsset);
             var respone = await _contractAssetService.CreateContractAsset(contractAssetMapper);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
         [HttpDelete("deleteContractAsset/{id}")]
         public async Task<IActionResult> DeleteContractAsset(int id)
         {
             var respone = await _contractAssetService.DeleteContractAsset(id);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
         [HttpPut("updateContractAsset")]
-        public async Task<IActionResult> UpdateContractAsset( ContractAssetDTO contractAsset)
+        public async Task<IActionResult> UpdateContractAsset(ContractAssetDTO contractAsset)
         {
             var contractAssetUpdate=_mapper.Map<ContractAsset>(contractAsset);
             var respone = await _contractAssetService.UpdateContractAsset(contractAssetUpdate);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
 
         [HttpGet("assets/{warehouseId}")]
         public async Task<IActionResult> GetAssetByWarehouseId(int warehouseId)
         {
             var respone = await _contractAssetService.GetContractAssetsByWarehouseId(warehouseId);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
     }
 }

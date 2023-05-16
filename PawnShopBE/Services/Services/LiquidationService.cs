@@ -66,7 +66,7 @@ namespace Services.Services
                 oldLogContract.Debt = oldContract.Loan;
                 oldLogContract.Paid = oldContract.Loan;
                 oldLogContract.LogTime = DateTime.Now;
-                oldLogContract.Description = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                oldLogContract.Description = "Hợp đồng thanh lý với số tiền " + liquidationMoney.ToString() + " VND.";
                 oldLogContract.EventType = (int)LogContractConst.CLOSE_CONTRACT;
 
                 await _logContractService.CreateLogContract(oldLogContract);

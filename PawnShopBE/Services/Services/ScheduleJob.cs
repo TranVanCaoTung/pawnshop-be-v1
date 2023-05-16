@@ -2,10 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using Mysqlx.Crud;
+using MySqlX.XDevAPI.Common;
 using PawnShopBE.Core.Const;
 using PawnShopBE.Core.Data;
 using PawnShopBE.Core.Display;
 using PawnShopBE.Core.DTOs;
+using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
 using PawnShopBE.Infrastructure.Helpers;
 using Quartz;
@@ -15,6 +17,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -28,10 +31,9 @@ namespace Services.Services
         private readonly IInteresDiaryService _interesDiaryService;
         private readonly ILogContractService _logContractService;
         private readonly IUserService _userService;
-        private readonly IPermissionService _perService;
-        private DateTime lastNotificationTime = DateTime.MinValue;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService, IPermissionService perService)
+        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService, IUnitOfWork unitOfWork)
         {
             _contextClass = dbContextClass;
             _contractService = contractService;
@@ -39,16 +41,10 @@ namespace Services.Services
             _interesDiaryService = interesDiaryService;
             _logContractService = logContractService;
             _userService = userService;
-            _perService = perService;
+            _unitOfWork = unitOfWork;
         }
         public async Task Execute(IJobExecutionContext context)
         {
-            TimeSpan timeSinceLastNotification = DateTime.UtcNow - lastNotificationTime;
-            if (timeSinceLastNotification.TotalMinutes >= 1)
-            {
-                // code to create the notification
-                lastNotificationTime = DateTime.UtcNow;
-            }      
             // Contracts IN_PROGRESS turn into OVER_DUE 
             var overdueContracts = _contextClass.Contract
                         .Where(c => c.Status == (int)ContractConst.IN_PROGRESS && c.ContractEndDate < DateTime.Today)
@@ -83,7 +79,7 @@ namespace Services.Services
                 TimeSpan timeDifference = DateTime.Now - contract.ContractEndDate;
                 double totalDays = timeDifference.TotalDays;
 
-                decimal paymentFee = (contract.Loan * (1 + package.PackageInterest)) * package.PackageInterest;
+                decimal paymentFee = (contract.Loan * (1 + package.InterestDiaryPenalty)) * package.InterestDiaryPenalty;
 
                 // Penalty for Punish Day 2 != 0
                 if (package.PunishDay2 != 0)
@@ -151,13 +147,42 @@ namespace Services.Services
                 }
                 logContract.Debt = diary.TotalPay;
                 logContract.Paid = 0;
-                logContract.Description = diary.NextDueDate.ToString("dd/MM/yyyy HH:mm");
+                logContract.Description = "Tiền lãi kỳ " + diary.NextDueDate.ToString("dd/MM/yyyy") + " chưa thanh toán số tiền " + logContract.Debt.ToString() + " VND.";
                 logContract.EventType = (int)LogContractConst.INTEREST_NOT_PAID;
                 logContract.LogTime = DateTime.Now;
                 await _logContractService.CreateLogContract(logContract);
             }
 
-
+            // Scan for customer point < 0 and turn status to BLACKLIST
+            var customerList = await _contextClass.Customer.Where(x => x.Status == (int)CustomerConst.ACTIVE && x.Point < 0).ToListAsync();
+            foreach(var  customer in customerList)
+            {
+                customer.Status = (int)CustomerConst.BLACKLIST;
+                customer.Reason = "Trễ hạn thanh toán nhiều hợp đồng.";
+                _contextClass.Customer.Update(customer);
+            }
+            // Create notification for contract end date.
+            var contractsListToday = await _contextClass.Contract.Where(x => x.ContractEndDate.Date == DateTime.Now.Date).ToListAsync();
+            // Get notfication have been created today
+            var notificationListToday = await _contextClass.Notifications.Where(x => x.CreatedDate.Date == DateTime.Now.Date).ToListAsync();
+            if (notificationListToday.Count != contractsListToday.Count)
+            {
+                var notificationList = new List<Notification>();
+                foreach (var contract in contractsListToday)
+                { 
+                    var notifi = new Notification();
+                    notifi.BranchId = contract.BranchId;
+                    notifi.Header = "Hợp đồng đến hạn";
+                    notifi.Content = "Hợp đồng " + contract.ContractCode + " đã đến hạn cần thanh toán.";
+                    notifi.Type = (int)NotificationConst.CONTRACT_END_DATE;
+                    notifi.CreatedDate = DateTime.Now;
+                    notifi.IsRead = false;
+                    notificationList.Add(notifi);
+                }
+                _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Notification ON;");
+                await _unitOfWork.Notifications.AddList(notificationList);
+                _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary OFF;");
+            }           
             _contextClass.SaveChanges();
         }
     }

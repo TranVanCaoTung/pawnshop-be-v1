@@ -19,8 +19,6 @@ namespace Services.Services.IServices
         Task<Customer> getCustomerByCCCD(string cccd);
         Task<int> createKyc(CustomerDTO customer);
         Task<Relative_Job_DependentDTO> getRelative(Guid idCus);
-        Task<bool> createRelative(Guid idCus, Relative_Job_DependentDTO customer);
-        Task<IEnumerable<DisplayCustomer>> getCustomerHaveBranch(
-            IEnumerable<DisplayCustomer> respone, IEnumerable<Customer> listCustomer);
+        Task<bool> createRelative(Guid idCus, Relative_Job_DependentDTO customer);            
     }
 }

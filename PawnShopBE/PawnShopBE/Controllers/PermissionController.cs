@@ -18,32 +18,24 @@ namespace PawnShopBE.Controllers
         private readonly IPermissionService _perService;
         private readonly IMapper _mapper;
 
-        public PermissionController(IPermissionService permission, IMapper mapper) 
+        public PermissionController(IPermissionService permission, IMapper mapper)
         {
-        _perService= permission;
-            _mapper=mapper;
+            _perService = permission;
+            _mapper = mapper;
         }
 
         [HttpGet("getAll")]
-        public async Task<IActionResult> GetAll() {
+        public async Task<IActionResult> GetAll()
+        {
             var listKyc = await _perService.GetPermission();
-            if (listKyc == null)
-                return BadRequest();
-            return Ok(listKyc);
+            return (listKyc == null) ? BadRequest() : Ok(listKyc);
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> Create(Permission per)
         {
-            if (per != null)
-            {
-                var respone= await _perService.CreatePermission(per);
-                if(respone)
-                {
-                    return Ok();
-                }
-            }
-            return BadRequest("Permission Is Exists");
+            var respone = await _perService.CreatePermission(per);
+            return (respone) ? Ok(respone) : BadRequest("Permission Is Exists");
         }
         [HttpPut("savepermission")]
         public async Task<IActionResult> SavePermission(IEnumerable<DisplayPermission> user)
@@ -56,36 +48,25 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        //[HttpPost("showpermission/userId")]
-        //public async Task<IActionResult> ShowPermission(Guid userId)
-        //{
-        //    if (user != null)
-        //    {
-        //        var respone = await _perService.ShowPermission(user);
-        //        return Ok(respone);
-        //    }
-        //    return BadRequest();
-        //}
+        [HttpPost("showpermission/{userId}")]
+        public async Task<IActionResult> ShowPermission(Guid userId)
+        {
+            var respone = await _perService.ShowPermission(userId);
+            return (respone != null) ? Ok(respone) : BadRequest();
+        }
+
         [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeletePermission( int id)
+        public async Task<IActionResult> DeletePermission(int id)
         {
             var respone = await _perService.DeletePermission(id);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone): BadRequest();
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdatePermission( Permission per)
+        public async Task<IActionResult> UpdatePermission(Permission per)
         {
             var respone = await _perService.UpdatePermission(per);
-            if (respone != null)
-            {
-                return Ok(respone);
-            }
-            return BadRequest();
+            return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
     }
 }

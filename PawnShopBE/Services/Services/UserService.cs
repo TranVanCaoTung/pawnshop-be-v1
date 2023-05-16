@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using PawnShopBE.Core.Const;
+using PawnShopBE.Core.Display;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
@@ -24,13 +25,15 @@ namespace Services.Services
         private DbContextClass _dbContextClass;
         private IUserRepository _userRepository;
         private IUserBranchService _userBranchService;
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, DbContextClass dbContextClass, IUserRepository userRepository, IUserBranchService userBranchService)
+        private IPermissionService _permissionService;
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, DbContextClass dbContextClass, IUserRepository userRepository, IUserBranchService userBranchService, IPermissionService permissionService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _dbContextClass = dbContextClass;
             _userRepository = userRepository;
             _userBranchService = userBranchService;
+            _permissionService = permissionService;
         }
         public async Task<bool> CreateUser(UserDTO userDTO)
         {
@@ -40,7 +43,7 @@ namespace Services.Services
 
                 user.CreateTime = DateTime.Now;
                 user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-
+                
                 // Create User
                 await _unitOfWork.Users.Add(user);
                 
@@ -53,9 +56,57 @@ namespace Services.Services
                     userBranch.UserId = user.UserId;
                     userBranch.BranchId = userDTO.BranchId;
                     await _userBranchService.CreateUserBranch(userBranch);
+
+                    // Create permission for manager
+                    if (user.RoleId == (int)RoleConst.MANAGER)
+                    {
+                        List<DisplayPermission> permissions = new List<DisplayPermission>();
+                        // REPORT_MANAGEMENT
+                        var reportPermission = new DisplayPermission();
+                        reportPermission.UserId = user.UserId;
+                        reportPermission.PermissionId = (int)PermissionConst.REPORT_MANAGEMENT;
+                        reportPermission.Status = true;
+                        permissions.Add(reportPermission);
+                        // WAREHOUSE_MANAGEMENT
+                        var warehousePermission = new DisplayPermission();
+                        warehousePermission.UserId = user.UserId;
+                        warehousePermission.PermissionId = (int)PermissionConst.WAREHOUSE_MANAGEMENT;
+                        warehousePermission.Status = true;
+                        permissions.Add(warehousePermission);
+                        // CUSTOMER_MANAGEMENT
+                        var customerPermission = new DisplayPermission();
+                        customerPermission.UserId = user.UserId;
+                        customerPermission.PermissionId = (int)PermissionConst.CUSTOMER_MANAGEMENT;
+                        customerPermission.Status = true;
+                        permissions.Add(customerPermission);
+                        // PAWN_MANAGEMENT
+                        var pawnPermission = new DisplayPermission();
+                        pawnPermission.UserId = user.UserId;
+                        pawnPermission.PermissionId = (int)PermissionConst.PAWN_MANAGEMENT;
+                        pawnPermission.Status = true;
+                        permissions.Add(pawnPermission);
+                        await _permissionService.SavePermission(permissions);
+                    }
+                    // Create permission for staff
+                    if (user.RoleId == (int)RoleConst.STAFF)
+                    {
+                        List<DisplayPermission> permissions = new List<DisplayPermission>();
+                        // CUSTOMER_MANAGEMENT
+                        var customerPermission = new DisplayPermission();
+                        customerPermission.UserId = user.UserId;
+                        customerPermission.PermissionId = (int)PermissionConst.CUSTOMER_MANAGEMENT;
+                        customerPermission.Status = true;
+                        permissions.Add(customerPermission);
+                        // PAWN_MANAGEMENT
+                        var pawnPermission = new DisplayPermission();
+                        pawnPermission.UserId = user.UserId;
+                        pawnPermission.PermissionId = (int)PermissionConst.PAWN_MANAGEMENT;
+                        pawnPermission.Status = true;
+                        permissions.Add(pawnPermission);
+                        await _permissionService.SavePermission(permissions);
+                    }
                     return true;
-                }
-                    
+                }               
             }
             return false;
         }
@@ -160,7 +211,6 @@ namespace Services.Services
                 if (userUpdate != null)
                 {
                     userUpdate.UserName = user.UserName;
-                    userUpdate.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
                     userUpdate.Status = user.Status;
                     userUpdate.Email= user.Email;
                     userUpdate.Phone = user.Phone;

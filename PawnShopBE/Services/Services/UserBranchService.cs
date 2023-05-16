@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
@@ -33,6 +34,12 @@ namespace Services.Services
         public async Task<IEnumerable<UserBranch>> GetAllUserBranches()
         {
             var userBranchList = await _unitOfWork.UserBranchs.GetAll();
+            return userBranchList;
+        }
+
+        public async Task<IEnumerable<UserBranch>> GetUserBranchByBranchId(int branchId)
+        {
+            var userBranchList = await  _dbContextClass.UserBranches.Where(x =>x.BranchId == branchId).ToListAsync();
             return userBranchList;
         }
 

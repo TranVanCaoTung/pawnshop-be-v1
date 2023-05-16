@@ -9,7 +9,6 @@ namespace Services.Services.IServices
 {
     public interface INotificationService
     {
-        public Task<IEnumerable<DisplayNotification>> NotificationList(int branchId);
-        public Task<bool> CreateNotification(int branchId);
+        public Task<bool> UpdateNotification(int notificationId, bool isRead);
     }
 }

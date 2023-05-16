@@ -18,6 +18,7 @@ namespace PawnShopBE.Core.Display
         public DateTime ContractEndDate { get; set; }
         public string WarehouseName { get; set; }
         public int Status { get; set; }
+        public string CCCD { get; set; }
 
     }
 }

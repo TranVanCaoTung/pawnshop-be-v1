@@ -11,13 +11,15 @@ namespace PawnShopBE.Controllers
     [Authorize]
     public class NotificationController : ControllerBase
     {
-        private readonly IContractService _contractService;
-        private readonly IMapper _mapper;
+        private IContractService _contractService;
+        private IMapper _mapper;
+        private INotificationService _notificationService;
 
-        public NotificationController(IContractService contractService, IMapper mapper)
+        public NotificationController(IContractService contractService, IMapper mapper, INotificationService notificationService)
         {
             _contractService = contractService;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
         [HttpGet("notificationList/{branchId}")]
         public async Task<IActionResult> getListContractToday(int branchId)
@@ -28,6 +30,12 @@ namespace PawnShopBE.Controllers
                 return Ok(result);
             }
             return BadRequest();
+        }
+        [HttpPut("updateNotification/{notificationId}")]
+        public async Task<IActionResult> readNotification(int notificationId, bool isRead)
+        {
+            var result = await _notificationService.UpdateNotification(notificationId, isRead);
+            return (result) ? Ok(result) : BadRequest(result);
         }
     }
 }
