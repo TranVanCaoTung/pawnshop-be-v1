@@ -106,7 +106,7 @@ namespace Services.Services
                     logContract.Debt = contract.Loan;
                     logContract.Paid = contract.Loan;
                     logContract.LogTime = DateTime.Now;
-                    logContract.Description = "Kết thúc hợp đồng với số tiền gốc nhận lại " + ransom.PaidMoney.ToString() + " VND.";
+                    logContract.Description = "Kết thúc hợp đồng với số tiền gốc nhận lại " + (int)ransom.PaidMoney + " VND.";
                     logContract.EventType = (int)LogContractConst.CLOSE_CONTRACT;
                     await _logContractService.CreateLogContract(logContract);
                     return true;

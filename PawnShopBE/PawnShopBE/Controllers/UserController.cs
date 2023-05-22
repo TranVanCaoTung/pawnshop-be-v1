@@ -29,7 +29,7 @@ namespace PawnShopBE.Controllers
         [HttpPost("recoveryPassword/{email}")]
         public async Task<IActionResult> recoverPass(string email)
         {
-            var respone = await _userService.SendEmail(email);
+            var respone = await _userService.RecoveryPassword(email);
             return (respone) ? Ok(respone) : BadRequest(respone);
         }
 
@@ -61,7 +61,7 @@ namespace PawnShopBE.Controllers
                     }
                 }
             }
-            return (userListByBranch != null) ? Ok(userListByBranch) : NotFound();
+            return (userListByBranch != null) ? Ok(userListByBranch.OrderByDescending(x => x.UserId)) : NotFound();
         }
 
         [HttpGet("getUserById/{userId:guid}")]
@@ -78,12 +78,12 @@ namespace PawnShopBE.Controllers
             var response = await _userService.UpdateUser(user, request.BranchId);
             return (response) ? Ok(response) : BadRequest(response);
         }
-        //[HttpPut("updatePassword")]
-        //public async Task<IActionResult> UpdatePassword(string newPwd)
-        //{
-        //    var response = await _userService.UpdateUser(user, request.BranchId);
-        //    return (response) ? Ok(response) : BadRequest(response);
-        //}
+        [HttpPut("changePassword/{userId}")]
+        public async Task<IActionResult> ChangePassword(Guid userId, string oldPwd, string newPwd)
+        {
+            var response = await _userService.ChangePassword(userId, oldPwd, newPwd);
+            return (response) ? Ok(response) : BadRequest("Password is wrong");
+        }
 
         [HttpDelete("deleteUser/{userId:guid}")]
         public async Task<IActionResult> DeleteUser(Guid userId)

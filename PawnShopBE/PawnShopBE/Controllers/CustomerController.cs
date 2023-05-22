@@ -56,8 +56,9 @@ namespace PawnShopBE.Controllers
         {
             var listCustomer = await _customer.GetAllCustomer(numPage);
             var customersActive = from c in listCustomer where c.Status == (int)CustomerConst.ACTIVE select c;
+            
             var response = _mapper.Map<IEnumerable<DisplayCustomer>>(customersActive);
-            return (response != null) ? Ok(response) : NotFound(response);          
+            return (response != null) ? Ok(response.OrderByDescending(x => x.CustomerId)) : NotFound(response);          
         }
         [HttpGet("getAllBlackList/{numPage}")]
         public async Task<IActionResult> GetAllCustomersBlackList(int numPage)
@@ -65,7 +66,7 @@ namespace PawnShopBE.Controllers
             var listCustomer = await _customer.GetAllCustomer(numPage);
             var customerBlackList = from c in listCustomer where c.Status == (int)CustomerConst.BLACKLIST select c;
             var response = _mapper.Map<IEnumerable<DisplayCustomer>>(customerBlackList);
-            return (response != null) ? Ok(response) : NotFound(response);
+            return (response != null) ? Ok(response.OrderByDescending(x => x.CustomerId)) : NotFound(response);
         }
 
         [HttpGet("getById/{id}")]

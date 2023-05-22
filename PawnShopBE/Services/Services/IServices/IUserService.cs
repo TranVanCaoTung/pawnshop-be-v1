@@ -1,4 +1,5 @@
-﻿using PawnShopBE.Core.DTOs;
+﻿using PawnShopBE.Core.Display;
+using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,11 @@ namespace Services.Services.IServices
     {
         Task<bool> CreateUser(UserDTO user);
         Task<IEnumerable<User>> GetAllUsers(int num);
-        Task<User> GetUserById(Guid userId);
+        Task<DisplayUser> GetUserById(Guid userId);
         Task<bool> UpdateUser(User user, int branchId);
         Task<bool> DeleteUser(Guid userId);
-        Task<bool> SendEmail(string email);
+        Task<bool> RecoveryPassword(string email);
         Task<User> GetAdmin(int role);
+        Task<bool> ChangePassword(Guid userId, string oldPwd, string newPwd);
     }
 }

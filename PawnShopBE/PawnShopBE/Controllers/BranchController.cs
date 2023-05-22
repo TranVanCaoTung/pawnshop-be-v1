@@ -54,7 +54,7 @@ namespace PawnShopBE.Controllers
         public async Task<IActionResult> GetBranchList(int numPage)
         {
             var branchList = await _branchService.GetAllBranch(numPage);
-            return (branchList == null) ? NotFound(branchList) : Ok(branchList);
+            return (branchList == null) ? NotFound(branchList.OrderByDescending(x => x.CreateDate)) : Ok(branchList);
         }
 
         [HttpGet("getById/{id}")]

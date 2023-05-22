@@ -53,9 +53,10 @@ namespace Services.Services
                 displayLogAsset.Description = logAsset.Description;
                 displayLogAsset.ImportImg = logAsset.ImportImg;
                 displayLogAsset.ExportImg = logAsset.ExportImg;
+                displayLogAsset.CreateDate = logAsset.CreateDate;
                 displayLogAssetList.Add(displayLogAsset);
             }
-            return (displayLogAssetList != null) ? displayLogAssetList : null;
+            return (displayLogAssetList != null) ? displayLogAssetList.OrderByDescending(x => x.CreateDate) : null;
         }
 
         public async Task<bool> UpdateLogAsset(int logAssetId, LogAsset logAsset)

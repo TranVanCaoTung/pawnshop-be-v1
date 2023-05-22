@@ -18,7 +18,6 @@ namespace Services.Services
 
         public IUnitOfWork _unitOfWork;
         private IContractService _contract;
-        private IInteresDiaryService _diary;
         private ILedgerService _ledgerService;
         private IServiceProvider _serviceProvider;
         private IUserBranchService _userBranchService;
@@ -26,12 +25,11 @@ namespace Services.Services
         
 
         public BranchService(IUnitOfWork unitOfWork, IContractService contract
-           , ILedgerService ledger, IInteresDiaryService diary, IServiceProvider serviceProvider, IUserBranchService userBranchService, IUserService userService)
+           , ILedgerService ledger, IServiceProvider serviceProvider, IUserBranchService userBranchService, IUserService userService)
         {
             _unitOfWork = unitOfWork;
             _contract = contract;
             _ledgerService = ledger;
-            _diary = diary;
             _serviceProvider = serviceProvider;
             _userBranchService = userBranchService;
             _userService = userService;
@@ -76,6 +74,7 @@ namespace Services.Services
             var ledgerList = await _ledgerService.GetLedgersByBranchId(branchId, year);
             // Get all contract that not close and equal to branchId to get total loan
             var contractList = await _contract.GetAllContracts();
+            contractList = contractList.Where(x => x.ContractStartDate.Year == year);
             var openContract = from c in contractList
                                where c.Status != (int)ContractConst.CLOSE && c.BranchId == branch.BranchId && c.ContractStartDate.Year == year
                                select c;

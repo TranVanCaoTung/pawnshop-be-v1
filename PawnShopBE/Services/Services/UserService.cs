@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PawnShopBE.Core.Const;
+using PawnShopBE.Core.Data;
 using PawnShopBE.Core.Display;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
@@ -43,10 +45,10 @@ namespace Services.Services
 
                 user.CreateTime = DateTime.Now;
                 user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-                
+
                 // Create User
                 await _unitOfWork.Users.Add(user);
-                
+
                 var result = _unitOfWork.Save();
 
                 if (result > 0)
@@ -106,17 +108,16 @@ namespace Services.Services
                         await _permissionService.SavePermission(permissions);
                     }
                     return true;
-                }               
+                }
             }
             return false;
         }
 
-        public async Task<bool> SendEmail(string email)
+        public async Task<bool> RecoveryPassword(string email)
         {
             try
             {
                 var user = await _userRepository.GetUserByEmail(email);
-                var userBranch =  _dbContextClass.UserBranches.FirstOrDefault(u => u.UserId == user.UserId);
                 if (user == null)
                 {
                     return false;
@@ -127,13 +128,14 @@ namespace Services.Services
 
                 string sendto = user.Email;
                 string subject = "[PAWNSHOP] - Khôi phục mật khẩu";
-                string content = "Mật khẩu mới cho tài khoản đăng nhập " + user.UserName + " : " + randomPassword + ".\nĐường link quay lại trang đăng nhập: ";
+                string content = "Mật khẩu mới cho tài khoản đăng nhập " + user.UserName + " : " + randomPassword + ".\r\nĐường link quay lại trang đăng nhập: ";
 
                 // Create random password
                 //set new password
-                user.Password = randomPassword;
+                user.Password = BCrypt.Net.BCrypt.HashPassword(randomPassword);
                 //update password
-                await UpdateUser(user, userBranch.BranchId);
+                _unitOfWork.Users.Update(user);
+                var result = _unitOfWork.Save();
 
                 MailMessage mail = new MailMessage();
                 SmtpClient smtp = new SmtpClient("smtp.gmail.com");
@@ -190,15 +192,32 @@ namespace Services.Services
             return result;
         }
 
-        public async Task<User> GetUserById(Guid userId)
+        public async Task<DisplayUser> GetUserById(Guid userId)
         {
-            if (userId != null)
+            var user = await _unitOfWork.Users.GetById(userId);
+            if (user != null)
             {
-                var user = await _unitOfWork.Users.GetById(userId);
-                if (user != null)
+                var displayUser = new DisplayUser();
+                displayUser.UserId = userId;
+                displayUser.RoleId = user.RoleId;
+                displayUser.UserName = user.UserName;
+                displayUser.Address = user.Address;
+                displayUser.Email = user.Email;
+                displayUser.FullName = user.FullName;
+                displayUser.CreateTime = user.CreateTime;
+                displayUser.UpdateTime = user.UpdateTime;
+                displayUser.Phone = user.Phone;
+                displayUser.Status = user.Status;
+                var userBranches = await _dbContextClass.UserBranches.Where(x => x.UserId == userId).ToListAsync();
+                List<DisplayUserBranch> displayUserBranches = new List<DisplayUserBranch>();
+                foreach(var userBranch in userBranches)
                 {
-                    return user;
+                    var displayUserBranch = new DisplayUserBranch();
+                    displayUserBranch.BranchId = userBranch.BranchId;
+                    displayUserBranches.Add(displayUserBranch);
                 }
+                displayUser.UserBranches = displayUserBranches;
+                return displayUser;
             }
             return null;
         }
@@ -212,11 +231,11 @@ namespace Services.Services
                 {
                     userUpdate.UserName = user.UserName;
                     userUpdate.Status = user.Status;
-                    userUpdate.Email= user.Email;
+                    userUpdate.Email = user.Email;
                     userUpdate.Phone = user.Phone;
-                    userUpdate.Address= user.Address;
-                    userUpdate.FullName= user.FullName;
-                    userUpdate.Role= user.Role;
+                    userUpdate.Address = user.Address;
+                    userUpdate.FullName = user.FullName;
+                    userUpdate.Role = user.Role;
                     userUpdate.UpdateTime = DateTime.Now;
                     var userBranch = new UserBranch();
                     userBranch.UserId = user.UserId;
@@ -225,11 +244,7 @@ namespace Services.Services
                     _unitOfWork.Users.Update(userUpdate);
 
                     var result = _unitOfWork.Save();
-
-                    if (result > 0)
-                        return true;
-                    else
-                        return false;
+                    if (result > 0) return true;
                 }
             }
             return false;
@@ -240,6 +255,25 @@ namespace Services.Services
             var admin = new User();
             admin = (role == (int)RoleConst.ADMIN) ? _dbContextClass.User.FirstOrDefault(a => a.RoleId == role) : null;
             return admin;
+        }
+
+        public async Task<bool> ChangePassword(Guid userId, string oldPwd, string newPwd)
+        {
+            var user = await _unitOfWork.Users.GetById(userId);
+            if (user != null)
+            {
+                // Check if input oldpwd is match
+                bool isValidPassword = BCrypt.Net.BCrypt.Verify(oldPwd, user.Password);
+                if (isValidPassword)
+                {
+                    newPwd = BCrypt.Net.BCrypt.HashPassword(newPwd);
+                    user.Password = newPwd;
+                    _unitOfWork.Users.Update(user);
+                    var result = _unitOfWork.Save();
+                    if (result > 0) return true;
+                }
+            }
+            return false;
         }
     }
 }

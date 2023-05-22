@@ -16,13 +16,15 @@ namespace Services.Services
     public class ContractAssetService : IContractAssetService
     {
         public IUnitOfWork _unitOfWork;
-        private readonly ContractAsset contractAsset;
-        private readonly IContractAssetRepository _contractAssetRepository;
+        private ContractAsset contractAsset;
+        private IContractAssetRepository _contractAssetRepository;
+        private IServiceProvider _serviceProvider;
 
-        public ContractAssetService(IUnitOfWork unitOfWork, IContractAssetRepository contractAssetRepository)
+        public ContractAssetService(IUnitOfWork unitOfWork, IContractAssetRepository contractAssetRepository, IServiceProvider serviceProvider)
         {
             _unitOfWork = unitOfWork;
             _contractAssetRepository = contractAssetRepository;
+            _serviceProvider = serviceProvider;
         }
         public async Task<bool> CreateContractAsset(ContractAsset contractAsset)
         {
@@ -69,7 +71,7 @@ namespace Services.Services
             return result;
         }
 
-        public async Task<bool> UpdateContractAsset(ContractAsset contractAsset)
+        public async Task<bool> UpdateContractAsset(Guid userId, ContractAsset contractAsset)
         {
             var contractAssetUpdate = _unitOfWork.ContractAssets.SingleOrDefault
                 (contractAsset, j => j.ContractAssetId == contractAsset.ContractAssetId);
@@ -81,15 +83,19 @@ namespace Services.Services
                 var result = _unitOfWork.Save();
                 if (result > 0)
                 {
-                    //var logAsset = new LogAsset();
-                    //logAsset.contractAssetId = contractAssetUpdate.ContractAssetId;
-                    //logAsset.Description = null;
-                    //logAsset.ImportImg = null;
-                    //logAsset.ExportImg = null;
-                    //logAsset.UserName = GetUser(contract.UserId);
-                    //logAsset.WareHouseName =  .WarehouseName;
-                    //await _logAssetService.CreateLogAsset(logAsset);
-
+                    // Get user update
+                    var userUpdate = await _unitOfWork.Users.GetById(userId);
+                    // Get warehouse update name
+                    var warehouse = await _unitOfWork.Warehouses.GetById(contractAssetUpdate.WarehouseId);
+                    var logAsset = new LogAsset();
+                    logAsset.contractAssetId = contractAssetUpdate.ContractAssetId;
+                    logAsset.Description = null;
+                    logAsset.ImportImg = null;
+                    logAsset.ExportImg = null;
+                    logAsset.UserName = userUpdate.FullName;
+                    logAsset.WareHouseName = warehouse.WarehouseName;
+                    var logAssetService = _serviceProvider.GetService(typeof(ILogAssetService)) as ILogAssetService;
+                    await logAssetService.CreateLogAsset(logAsset);
                     return true;
                 }
             }
@@ -104,6 +110,24 @@ namespace Services.Services
                 return (List<ContractAsset>) assetList;
             }
             return null; 
+        }
+
+        public async Task<bool> UpdateContractAsset(ContractAsset contractAsset)
+        {
+            var contractAssetUpdate = _unitOfWork.ContractAssets.SingleOrDefault
+                (contractAsset, j => j.ContractAssetId == contractAsset.ContractAssetId);
+            if (contractAssetUpdate != null)
+            {
+                contractAssetUpdate.WarehouseId = contractAsset.WarehouseId;
+                contractAssetUpdate.Status = contractAsset.Status;
+                _unitOfWork.ContractAssets.Update(contractAssetUpdate);
+                var result = _unitOfWork.Save();
+                if (result > 0)
+                {               
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

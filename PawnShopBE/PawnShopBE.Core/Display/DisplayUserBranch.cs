@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PawnShopBE.Core.Const
+namespace PawnShopBE.Core.Display
 {
-    public enum RoleConst
+    public class DisplayUserBranch
     {
-        ADMIN = 1,
-        MANAGER = 2,
-        STAFF = 3
+        public int BranchId { get; set; }
     }
 }

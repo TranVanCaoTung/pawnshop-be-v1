@@ -55,7 +55,6 @@ namespace Services.Services
 
             var result = await _unitOfWork.PawnableProduct.GetById(pawnableProductId);
             var attributes = await  _pawnsRepository.GetAttributesByPawnableProductId(pawnableProductId);
-             
             return result;
         }
 

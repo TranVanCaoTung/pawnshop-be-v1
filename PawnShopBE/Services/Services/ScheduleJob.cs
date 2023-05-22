@@ -20,6 +20,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Contract = PawnShopBE.Core.Models.Contract;
 
 namespace Services.Services
 {
@@ -32,8 +33,13 @@ namespace Services.Services
         private readonly ILogContractService _logContractService;
         private readonly IUserService _userService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IBranchService _branchService;
+        private readonly IRansomService _ransomService;
+        private readonly ILiquidationService _liquidationService;
+        private readonly ILedgerService _ledgerService;
 
-        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService, IUnitOfWork unitOfWork)
+        public ScheduleJob(DbContextClass dbContextClass, IContractService contractService, IPackageService packageService, 
+            IInteresDiaryService interesDiaryService, ILogContractService logContractService, IUserService userService, IUnitOfWork unitOfWork, IBranchService branchService, IRansomService ransomService, ILiquidationService liquidationService, ILedgerService ledgerService)
         {
             _contextClass = dbContextClass;
             _contractService = contractService;
@@ -42,6 +48,10 @@ namespace Services.Services
             _logContractService = logContractService;
             _userService = userService;
             _unitOfWork = unitOfWork;
+            _branchService = branchService;
+            _ransomService = ransomService;
+            _liquidationService = liquidationService;
+            _ledgerService = ledgerService;
         }
         public async Task Execute(IJobExecutionContext context)
         {
@@ -110,6 +120,7 @@ namespace Services.Services
                 }
                 ransom.Status = (int)RansomConsts.LATE;
             }
+            // Overdue of diaries
             var overdueDiaries = _contextClass.InterestDiary
                         .Where(d => d.Status == (int)InterestDiaryConsts.NOT_PAID && d.NextDueDate < DateTime.Today && d.Penalty == 0)
                         .ToList();
@@ -147,7 +158,7 @@ namespace Services.Services
                 }
                 logContract.Debt = diary.TotalPay;
                 logContract.Paid = 0;
-                logContract.Description = "Tiền lãi kỳ " + diary.NextDueDate.ToString("dd/MM/yyyy") + " chưa thanh toán số tiền " + logContract.Debt.ToString() + " VND.";
+                logContract.Description = "Tiền lãi kỳ " + diary.NextDueDate.ToString("dd/MM/yyyy") + " chưa thanh toán số tiền " + (int)logContract.Debt + " VND.";
                 logContract.EventType = (int)LogContractConst.INTEREST_NOT_PAID;
                 logContract.LogTime = DateTime.Now;
                 await _logContractService.CreateLogContract(logContract);
@@ -155,34 +166,89 @@ namespace Services.Services
 
             // Scan for customer point < 0 and turn status to BLACKLIST
             var customerList = await _contextClass.Customer.Where(x => x.Status == (int)CustomerConst.ACTIVE && x.Point < 0).ToListAsync();
-            foreach(var  customer in customerList)
+            foreach (var customer in customerList)
             {
                 customer.Status = (int)CustomerConst.BLACKLIST;
                 customer.Reason = "Trễ hạn thanh toán nhiều hợp đồng.";
                 _contextClass.Customer.Update(customer);
             }
-            // Create notification for contract end date.
-            var contractsListToday = await _contextClass.Contract.Where(x => x.ContractEndDate.Date == DateTime.Now.Date).ToListAsync();
-            // Get notfication have been created today
-            var notificationListToday = await _contextClass.Notifications.Where(x => x.CreatedDate.Date == DateTime.Now.Date).ToListAsync();
-            if (notificationListToday.Count != contractsListToday.Count)
+            
+            // Ledger
+            DateTime firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            DateTime lastDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month));
+
+            var result = 0;
+            var branchList = await _branchService.GetAllBranch(0);
+            foreach (var branch in branchList)
             {
-                var notificationList = new List<Notification>();
-                foreach (var contract in contractsListToday)
-                { 
-                    var notifi = new Notification();
-                    notifi.BranchId = contract.BranchId;
-                    notifi.Header = "Hợp đồng đến hạn";
-                    notifi.Content = "Hợp đồng " + contract.ContractCode + " đã đến hạn cần thanh toán.";
-                    notifi.Type = (int)NotificationConst.CONTRACT_END_DATE;
-                    notifi.CreatedDate = DateTime.Now;
-                    notifi.IsRead = false;
-                    notificationList.Add(notifi);
+                // Check if old ledgers exist
+                var ledger = new Ledger();
+                try
+                {
+                    ledger = _contextClass.Ledger.FirstOrDefault(l => l.BranchId == branch.BranchId && (l.FromDate >= firstDayOfMonth) && (l.ToDate <= lastDayOfMonth));
                 }
-                _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Notification ON;");
-                await _unitOfWork.Notifications.AddList(notificationList);
-                _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary OFF;");
-            }           
+                catch (NullReferenceException e)
+                {
+
+                }
+                if (ledger != null)
+                {
+                    decimal totalInterestGet = 0;
+                    decimal totalRansom = 0;
+                    decimal totalLiquidation = 0;
+                    ledger.Revenue = 0;
+                    ledger.Loan = 0;
+                    ledger.Profit = 0;
+                    var contractsOfBranch = await _contextClass.Set<Contract>()
+                                         .Where(c => c.BranchId == branch.BranchId)
+                                         .ToListAsync();
+                    foreach (var contract in contractsOfBranch)
+                    {
+                        var interestDiaryOfMonth = await _interesDiaryService.GetInteresDiariesByContractId(contract.ContractId);
+                        foreach (var interestDiary in interestDiaryOfMonth)
+                        {
+                            // Get interest money paid each day
+                            if (interestDiary != null)
+                            {
+                                totalInterestGet += interestDiary.PaidMoney;
+                            }
+                        }
+                        // Get money ransom paid each day
+                        var ransomOfMonth = await _ransomService.GetRansomByContractId(contract.ContractId);
+                        if (ransomOfMonth != null)
+                        {
+                            totalRansom += ransomOfMonth.PaidMoney;
+                        }
+
+                        // Get money liquidation paid each day
+                        var liquidationOfMonth = await _liquidationService.GetLiquidationById(contract.ContractId);
+                        if (liquidationOfMonth != null)
+                        {
+                            totalLiquidation += liquidationOfMonth.LiquidationMoney;
+                        }
+                        ledger.Revenue = totalLiquidation + totalRansom + totalInterestGet;
+                        ledger.Loan = contract.Loan;
+                        ledger.Profit = ledger.Revenue - ledger.Loan;
+                        _ledgerService.UpdateLedger(ledger);
+                    }
+                }
+                else
+                {
+                    ledger = new Ledger();
+
+                    ledger.FromDate = firstDayOfMonth;
+                    ledger.ToDate = lastDayOfMonth;
+                    ledger.BranchId = branch.BranchId;
+                    ledger.Revenue = 0;
+                    ledger.Profit = 0;
+                    ledger.Loan = 0;
+                    ICollection<Ledger> ledgerList = new List<Ledger>();
+                    _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Ledger ON;");
+                    ledgerList.Add(ledger);
+                    await _unitOfWork.Ledgers.AddList(ledgerList);
+                    _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Ledger OFF;");
+                }
+            }
             _contextClass.SaveChanges();
         }
     }

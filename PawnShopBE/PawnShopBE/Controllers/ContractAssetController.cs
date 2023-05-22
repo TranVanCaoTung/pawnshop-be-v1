@@ -41,11 +41,11 @@ namespace PawnShopBE.Controllers
             var respone = await _contractAssetService.DeleteContractAsset(id);
             return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
-        [HttpPut("updateContractAsset")]
-        public async Task<IActionResult> UpdateContractAsset(ContractAssetDTO contractAsset)
+        [HttpPut("updateContractAsset/{userId}")]
+        public async Task<IActionResult> UpdateContractAsset(ContractAssetDTO contractAsset, Guid userId)
         {
             var contractAssetUpdate=_mapper.Map<ContractAsset>(contractAsset);
-            var respone = await _contractAssetService.UpdateContractAsset(contractAssetUpdate);
+            var respone = await _contractAssetService.UpdateContractAsset(userId, contractAssetUpdate);
             return (respone != null) ? Ok(respone) : BadRequest(respone);
         }
 

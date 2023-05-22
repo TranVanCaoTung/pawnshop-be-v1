@@ -165,50 +165,6 @@ namespace Services.Services
 
             return displayContractHomePage;
         }
-        private async Task<IEnumerable<DisplayContractHomePage>> TakePage(int number, IEnumerable<DisplayContractHomePage> list)
-        {
-            var numPage = (int)NumberPage.numPage;
-            var skip = (numPage * number) - numPage;
-            return list.Skip(skip).Take(numPage);
-        }
-        private decimal getRansom(IEnumerable<Ransom> ransomList, int contractId)
-        {
-            var ransom = (from r in ransomList where r.ContractId == contractId select r).FirstOrDefault();
-            return ransom.TotalPay;
-        }
-        private string getBranchName(int branchId, IEnumerable<Branch> branchList, bool v)
-        {
-            var branch = (from b in branchList where b.BranchId == branchId select b).FirstOrDefault();
-            // true => get branch Name, false => get fund
-            if (v)
-                return branch.BranchName;
-            else
-                return branch.Fund.ToString();
-        }
-
-        private string getAsset(int contractAssetId, IEnumerable<ContractAsset> assetList,
-            IEnumerable<PawnableProduct> pawnableList, IEnumerable<Warehouse> warehouseList, int num)
-        {
-            //get list contract asset
-            var asset = (from a in assetList where a.ContractAssetId == contractAssetId select a).FirstOrDefault();
-            // 1 => get code Asset, 2 => get name Asset, 3 => get ware name
-            switch (num)
-            {
-                case 1:
-                    var pawnable = (from p in pawnableList
-                                    where p.PawnableProductId == asset.PawnableProductId
-                                    select p).FirstOrDefault();
-                    return pawnable.CommodityCode;
-
-                case 2:
-                    return asset.ContractAssetName;
-
-                case 3:
-                    var wareHouse = (from w in warehouseList where w.WarehouseId == asset.WarehouseId select w).FirstOrDefault();
-                    return wareHouse.WarehouseName;
-            }
-            return null;
-        }
 
         private string GetCustomerName(Guid customerId)
         {
@@ -270,6 +226,7 @@ namespace Services.Services
                     logAsset.ExportImg = null;
                     logAsset.UserName = GetUser(contract.UserId);
                     logAsset.WareHouseName = warehouse.WarehouseName;
+                    logAsset.CreateDate = DateTime.Now;
                     await _logAssetService.CreateLogAsset(logAsset);
                     // Create Log Contract
                     var logContract = new LogContract();
@@ -437,10 +394,7 @@ namespace Services.Services
 
                     var result = _unitOfWork.Save();
 
-                    if (result > 0)
-                        return true;
-                    else
-                        return false;
+                    if (result > 0) return true;
                 }
             }
             return false;
@@ -570,7 +524,7 @@ namespace Services.Services
                         oldLogContract.Debt = oldContract.Loan;
                         oldLogContract.Paid = oldContract.Loan;
                         oldLogContract.LogTime = DateTime.Now;
-                        oldLogContract.Description = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        oldLogContract.Description = "Kết thúc hợp đồng với số tiền gốc nhận lại " + (int)oldContract.Loan + " VND.";
                         oldLogContract.EventType = (int)LogContractConst.CLOSE_CONTRACT;
                         await _logContractService.CreateLogContract(oldLogContract);
 
@@ -634,6 +588,8 @@ namespace Services.Services
                                                                            TotalProfit = contract.TotalProfit,
                                                                            WarehouseName = warehouse.WarehouseName,
                                                                            ContractStatus = contract.Status,
+                                                                           ContractAssetId = contractAsset.ContractAssetId,
+                                                                           WarehouseId = warehouse.WarehouseId
                                                                        };
                 if (contractJoinPackageJoinAssetJoinCustomerJoinUser != null)
                 {
@@ -664,6 +620,8 @@ namespace Services.Services
                         string[] attributes = attribute.Split("/");
                         displayContractInfo.AttributeInfos = attributes;
                         displayContractInfo.Status = row.ContractStatus;
+                        displayContractInfo.ContractAssetId = row.ContractAssetId;
+                        displayContractInfo.WarehouseId = row.WarehouseId;
                     }
                     decimal interestPaid = 0;
                     decimal interestDebt = 0;

@@ -10,7 +10,7 @@ namespace Services.Services.IServices
 {
     public interface ILiquidationService
     {
-        Task<bool> CreateLiquidation(int contractId, decimal liquidationMoney);
+        Task<bool> CreateLiquidation(int contractId,Guid userId, decimal liquidationMoney, string proofImg);
         Task<IEnumerable<Liquidtation>> GetLiquidation();
         Task<DisplayLiquidationDetail> GetLiquidationById(int contractId);
         Task<bool> UpdateLiquidation(Liquidtation liquidtation);

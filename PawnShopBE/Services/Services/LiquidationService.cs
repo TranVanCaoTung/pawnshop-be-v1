@@ -29,49 +29,47 @@ namespace Services.Services
             _logContractService = logContractService;
             _dbContextClass = dbContextClass;
         }
-        public async Task<bool> CreateLiquidation(int contractId, decimal liquidationMoney)
+        public async Task<bool> CreateLiquidation(int contractId,Guid userId, decimal liquidationMoney, string proofImg)
         {
-            var liquidationDetail = await GetLiquidationById(contractId);
-            var oldContract = await _contractService.GetContractById(contractId);
-
-            if (liquidationDetail != null)
+            var contract = await _contractService.GetContractById(contractId);
+            if (contract != null)
             {
                 var liquidation = new Liquidtation();
                 liquidation.LiquidationMoney = liquidationMoney;
-                liquidation.liquidationDate = liquidationDetail.LiquidationDate;
+                liquidation.liquidationDate = DateTime.Now;
                 liquidation.ContractId = contractId;
-                liquidation.Description = "Thanh lý";
-                oldContract.ActualEndDate = DateTime.Now;
-                oldContract.Status = (int)ContractConst.CLOSE;
+                liquidation.Description = proofImg;
+
+                // Change status contract to close
+                contract.ActualEndDate = DateTime.Now;
+                contract.Status = (int)ContractConst.CLOSE;
 
                 // Close Log Contract
                 var contractJoinUserJoinCustomer = from getcontract in _dbContextClass.Contract
                                                    join customer in _dbContextClass.Customer
-                                                   on oldContract.CustomerId equals customer.CustomerId
-                                                   join user in _dbContextClass.User
-                                                   on oldContract.UserId equals user.UserId
+                                                   on contract.CustomerId equals customer.CustomerId
                                                    select new
                                                    {
-                                                       ContractId = oldContract.ContractId,
-                                                       UserName = user.FullName,
+                                                       ContractId = contract.ContractId,
                                                        CustomerName = customer.FullName,
                                                    };
+                var user = await _unit.Users.GetById(userId);
                 var oldLogContract = new LogContract();
                 foreach (var row in contractJoinUserJoinCustomer)
                 {
                     oldLogContract.ContractId = row.ContractId;
-                    oldLogContract.UserName = row.UserName;
+                    oldLogContract.UserName = user.UserName;
                     oldLogContract.CustomerName = row.CustomerName;
                 }
-                oldLogContract.Debt = oldContract.Loan;
-                oldLogContract.Paid = oldContract.Loan;
+                oldLogContract.Debt = contract.Loan;
+                oldLogContract.Paid = liquidationMoney;
                 oldLogContract.LogTime = DateTime.Now;
-                oldLogContract.Description = "Hợp đồng thanh lý với số tiền " + liquidationMoney.ToString() + " VND.";
+                oldLogContract.Description = "Hợp đồng thanh lý với số tiền " + (int)liquidationMoney + " VND.";
                 oldLogContract.EventType = (int)LogContractConst.CLOSE_CONTRACT;
 
                 await _logContractService.CreateLogContract(oldLogContract);
                 await _unit.Liquidations.Add(liquidation);
-                _unit.Contracts.Update(oldContract);
+                _unit.Contracts.Update(contract);
                 var result = _unit.Save();
                 if (result > 0)
                 {

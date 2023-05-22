@@ -33,12 +33,11 @@ namespace PawnShopBE.Controllers
             return BadRequest();
         }
 
-        [HttpPost("save/{contractId}")]
-        public async Task<IActionResult> CreateLiquidation(int contractId, decimal liquidationMoney)
+        [HttpPost("save/{contractId}/{userId}")]
+        public async Task<IActionResult> CreateLiquidation(int contractId, Guid userId, decimal liquidationMoney, string proofImg)
         {
            
-            //var liquidationMapper = _mapper.Map<Liquidtation>(liquidation);
-            var respone = await _liquidationService.CreateLiquidation(contractId, liquidationMoney);
+            var respone = await _liquidationService.CreateLiquidation(contractId, userId, liquidationMoney, proofImg);
             if (respone != null)
             {
                 return Ok(respone);

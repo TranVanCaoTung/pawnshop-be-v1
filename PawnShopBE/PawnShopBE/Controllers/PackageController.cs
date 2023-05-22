@@ -39,7 +39,7 @@ namespace PawnShopBE.Controllers
             {
                 return NotFound(packageList);
             }
-            return Ok(packageList);
+            return Ok(packageList.OrderByDescending(x => x.PackageId));
         }
 
         [HttpPut("updatePackage")]

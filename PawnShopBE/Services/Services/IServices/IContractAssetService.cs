@@ -16,7 +16,9 @@ namespace Services.Services.IServices
 
         Task<ContractAsset> GetContractAssetById(int contractAssetId);
 
+        Task<bool> UpdateContractAsset(Guid userId, ContractAsset contractAsset);
         Task<bool> UpdateContractAsset(ContractAsset contractAsset);
+
 
         Task<bool> DeleteContractAsset(int contractAssetId);
     }

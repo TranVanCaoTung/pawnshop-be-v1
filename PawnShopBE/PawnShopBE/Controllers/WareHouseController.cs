@@ -44,7 +44,7 @@ namespace PawnShopBE.Controllers
 
             if (respone != null)
             {
-                return Ok(respone);
+                return Ok(respone.OrderByDescending(x => x.WarehouseId));
             }
             else
             {

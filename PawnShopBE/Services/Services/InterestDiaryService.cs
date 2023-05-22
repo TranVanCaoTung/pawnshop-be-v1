@@ -180,7 +180,7 @@ namespace Services.Services
                     if (diaryUpdate.TotalPay == diaryUpdate.PaidMoney)
                     {
                         logContract.EventType = (int)LogContractConst.INTEREST_PAID;
-                        logContract.Description = "Tiền lãi kỳ " + diaryUpdate.NextDueDate.ToString("dd/MM/yyyy") + " đã thanh toán đủ số tiền "  + logContract.Paid.ToString() + " VND.";
+                        logContract.Description = "Tiền lãi kỳ " + diaryUpdate.NextDueDate.ToString("dd/MM/yyyy") + " đã thanh toán đủ số tiền "  + (int)logContract.Paid + " VND.";
                     }
 
                     // Trả tiền lãi vẫn còn chưa đủ 
@@ -190,8 +190,8 @@ namespace Services.Services
                         logContract.Debt = diaryUpdate.InterestDebt;
                         logContract.Paid = paidMoney;
                         logContract.Description = "Tiền lãi kỳ " + diaryUpdate.NextDueDate.ToString("dd/MM/yyyy") + 
-                                                  " đã trả " + logContract.Paid.ToString() + " VND. " + 
-                                                  "Còn nợ số tiền " + logContract.Debt.ToString() + " VND.";
+                                                  " đã trả " + (int)logContract.Paid + " VND. " + 
+                                                  "Còn nợ số tiền " + (int)logContract.Debt + " VND.";
                     }
                     logContract.LogTime = DateTime.Now;
                     await _logContractService.CreateLogContract(logContract);

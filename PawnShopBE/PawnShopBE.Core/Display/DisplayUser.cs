@@ -9,15 +9,20 @@ namespace PawnShopBE.Core.Display
 {
     public class DisplayUser
     {
-        public int Num { get; set; }
         public Guid UserId { get; set; }
-        public int BranchId { get; set; }
-        public string BranchName { get; set; }
-        public string FullName { get; set; }
+        public int RoleId { get; set; }
         public string UserName { get; set; }
-        public string Phone { get; set; }
-        public string Address { get; set; }
+        public string Email { get; set; }
+        public string? FullName { get; set; }
+        public string? Address { get; set; }
+        public string? Phone { get; set; }
         public DateTime CreateTime { get; set; }
+        public DateTime? UpdateTime { get; set; }
         public int Status { get; set; }
+        public ICollection<DisplayUserBranch> UserBranches { get; set; }
+        public DisplayUser()
+        {
+            UserBranches = new List<DisplayUserBranch>();
+        }
     }
 }

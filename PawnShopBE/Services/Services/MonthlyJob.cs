@@ -4,12 +4,15 @@ using PawnShopBE.Core.Const;
 using PawnShopBE.Core.DTOs;
 using PawnShopBE.Core.Interfaces;
 using PawnShopBE.Core.Models;
+using PawnShopBE.Helpers;
 using PawnShopBE.Infrastructure.Helpers;
 using Quartz;
 using Services.Services.IServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,82 +43,94 @@ namespace Services.Services
         }
         public async Task Execute(IJobExecutionContext context)
         {
-            DateTime firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            DateTime lastDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month));
-
-            var result = 0;
-            var branchList = await _branchService.GetAllBranch(0);
-            foreach (var branch in branchList)
+            // Create notification for contract end date.
+            var contractsListToday = await _contextClass.Contract.Where(x => x.ContractEndDate.Date == DateTime.Now.Date).ToListAsync();
+            // Get notfication have been created today
+            var notificationListToday = await _contextClass.Notifications.Where(x => x.CreatedDate.Date == DateTime.Now.Date).ToListAsync();
+            if (notificationListToday.Count != contractsListToday.Count)
             {
-                // Check if old ledgers exist
-                var ledger = new Ledger();
-                try
+                var notificationList = new List<Notification>();
+                foreach (var contract in contractsListToday)
                 {
-                    ledger = _contextClass.Ledger.FirstOrDefault(l => l.BranchId == branch.BranchId && (l.FromDate >= firstDayOfMonth) && (l.ToDate <= lastDayOfMonth));
-                }
-                catch (NullReferenceException e)
-                {
-
-                }
-                if (ledger != null)
-                {
-                    decimal totalInterestGet = 0;
-                    decimal totalRansom = 0;
-                    decimal totalLiquidation = 0;
-                    ledger.Revenue = 0;
-                    ledger.Loan = 0;
-                    ledger.Profit = 0;
-                    var contractsOfBranch = await _contextClass.Set<Contract>()
-                                         .Where(c => c.BranchId == branch.BranchId)
-                                         .ToListAsync();
-                    foreach (var contract in contractsOfBranch)
+                    // Create new notification list when list is zero
+                    if (notificationListToday.Count == 0)
                     {
-                        var interestDiaryOfMonth = await _interesDiaryService.GetInteresDiariesByContractId(contract.ContractId);
-                        foreach (var interestDiary in interestDiaryOfMonth)
-                        {
-                            // Get interest money paid each day
-                            if (interestDiary != null)
-                            {
-                                totalInterestGet += interestDiary.PaidMoney;
-                            }
-                        }
-                        // Get money ransom paid each day
-                        var ransomOfMonth = await _ransomService.GetRansomByContractId(contract.ContractId);
-                        if (ransomOfMonth != null)
-                        {
-                            totalRansom += ransomOfMonth.PaidMoney;
-                        }
-
-                        // Get money liquidation paid each day
-                        var liquidationOfMonth = await _liquidationService.GetLiquidationById(contract.ContractId);
-                        if (liquidationOfMonth != null)
-                        {
-                            totalLiquidation += liquidationOfMonth.LiquidationMoney;
-                        }
-                        ledger.Revenue = totalLiquidation + totalRansom + totalInterestGet;
-                        ledger.Loan = contract.Loan;
-                        ledger.Profit = ledger.Revenue - ledger.Loan;
-                        _ledgerService.UpdateLedger(ledger);
+                        // Create new instance to save list of notification
+                        var notifi = new Notification();
+                        notifi.BranchId = contract.BranchId;
+                        notifi.Header = "Hợp đồng đến hạn";
+                        notifi.Content = "Hợp đồng " + contract.ContractCode + " đã đến hạn cần thanh toán.";
+                        notifi.Type = (int)NotificationConst.CONTRACT_END_DATE;
+                        notifi.CreatedDate = DateTime.Now;
+                        notifi.IsRead = false;
+                        notificationList.Add(notifi);
                     }
-                }
-                else
-                {
-                    ledger = new Ledger();
+                    //else
+                    //{
+                    //    foreach (var notification in notificationListToday)
+                    //    {
+                    //        // Matches "CĐ-" followed by one or more digits
+                    //        string pattern = @"CĐ-\d+";
+                    //        Match match = Regex.Match(notification.Content, pattern);
+                    //        if (match.Success)
+                    //        {
+                    //            // Check if notification is created
+                    //            if (contract.ContractCode.Equals(match.Value))
+                    //            {
+                    //                continue;
+                    //            }
+                    //            else
+                    //            {
+                    //                // Create new instance to save list of notification
+                    //                var notifi = new Notification();
+                    //                notifi.BranchId = contract.BranchId;
+                    //                notifi.Header = "Hợp đồng đến hạn";
+                    //                notifi.Content = "Hợp đồng " + contract.ContractCode + " đã đến hạn cần thanh toán.";
+                    //                notifi.Type = (int)NotificationConst.CONTRACT_END_DATE;
+                    //                notifi.CreatedDate = DateTime.Now;
+                    //                notifi.IsRead = false;
+                    //                notificationList.Add(notifi);
 
-                    ledger.FromDate = firstDayOfMonth;
-                    ledger.ToDate = lastDayOfMonth;
-                    ledger.BranchId = branch.BranchId;
-                    ledger.Revenue = 0;
-                    ledger.Profit = 0;
-                    ledger.Loan = 0;
-                    ICollection<Ledger> ledgerList = new List<Ledger>();
-                    _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Ledger ON;");
-                    ledgerList.Add(ledger);
-                    await _unitOfWork.Ledgers.AddList(ledgerList);
-                    _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Ledger OFF;");
+                    //            }
+                    //        }
+                    //    }
+
+                    //}
+
                 }
+                _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.Notification ON;");
+                await _unitOfWork.Notifications.AddList(notificationList);
+                _contextClass.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.InterestDiary OFF;");
             }
-            await _unitOfWork.SaveList();
+            var userBranchList = _unitOfWork.UserBranchs.GetAll();
+
+            string _gmail = "hethongpawns@gmail.com";
+            string _password = "fnblmxkfeaeilbxs";
+
+            //string sendto = user.Email;
+            string subject = "[PAWNSHOP] - HỢP ĐỒNG CẦN XỬ LÝ";
+            string content = DateTime.Now.ToString("dd/MM/yyyy") + "Hiện tại đang có " + "14" + " hợp đồng cần được xử lí ";
+
+   
+            var result = _unitOfWork.Save();
+
+            MailMessage mail = new MailMessage();
+            SmtpClient smtp = new SmtpClient("smtp.gmail.com");
+            //set property for email you want to send
+            mail.From = new MailAddress(_gmail);
+            //mail.To.Add(sendto);
+            mail.Subject = subject;
+            mail.IsBodyHtml = true;
+            mail.Body = content;
+            mail.Priority = MailPriority.High;
+            //set smtp port
+            smtp.Port = 587;
+            smtp.UseDefaultCredentials = false;
+            //set gmail pass sender
+            smtp.Credentials = new NetworkCredential(_gmail, _password);
+            smtp.EnableSsl = true;
+            smtp.Send(mail);
+            _contextClass.SaveChanges();
         }
     }
 }
