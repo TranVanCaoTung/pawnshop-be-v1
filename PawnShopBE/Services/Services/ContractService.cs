@@ -426,7 +426,7 @@ namespace Services.Services
                 contractDetail.Loan = contract.Loan;
                 contractDetail.ContractStartDate = contract.ContractStartDate;
                 contractDetail.ContractEndDate = contract.ContractEndDate;
-                contractDetail.PackageInterest = package.PackageInterest;
+                contractDetail.PackageInterest = (contract.InterestRecommend != 0) ? contract.InterestRecommend : package.PackageInterest;
                 contractDetail.InterestPaid = interestPaid;
                 contractDetail.InterestDebt = interestDebt;
                 contractDetail.Status = contract.Status;
@@ -514,20 +514,6 @@ namespace Services.Services
                                                                UserName = user.FullName,
                                                                CustomerName = customer.FullName,
                                                            };
-                        var oldLogContract = new LogContract();
-                        foreach (var row in contractJoinUserJoinCustomer)
-                        {
-                            oldLogContract.ContractId = row.ContractId;
-                            oldLogContract.UserName = row.UserName;
-                            oldLogContract.CustomerName = row.CustomerName;
-                        }
-                        oldLogContract.Debt = oldContract.Loan;
-                        oldLogContract.Paid = oldContract.Loan;
-                        oldLogContract.LogTime = DateTime.Now;
-                        oldLogContract.Description = "Kết thúc hợp đồng với số tiền gốc nhận lại " + (int)oldContract.Loan + " VND.";
-                        oldLogContract.EventType = (int)LogContractConst.CLOSE_CONTRACT;
-                        await _logContractService.CreateLogContract(oldLogContract);
-
                         // Close Ransom of oldcontract
                         var closeRansom = await ransomProvider.GetRansomByContractId(oldContract.ContractId);
                         await ransomProvider.SaveRansom(closeRansom.RansomId, proofImg);

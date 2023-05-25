@@ -196,6 +196,7 @@ namespace Services.Services
                     decimal totalInterestGet = 0;
                     decimal totalRansom = 0;
                     decimal totalLiquidation = 0;
+                    decimal totalLoan = 0;
                     ledger.Revenue = 0;
                     ledger.Loan = 0;
                     ledger.Profit = 0;
@@ -204,6 +205,7 @@ namespace Services.Services
                                          .ToListAsync();
                     foreach (var contract in contractsOfBranch)
                     {
+                        totalLoan += contract.Loan;
                         var interestDiaryOfMonth = await _interesDiaryService.GetInteresDiariesByContractId(contract.ContractId);
                         foreach (var interestDiary in interestDiaryOfMonth)
                         {
@@ -219,6 +221,10 @@ namespace Services.Services
                         {
                             totalRansom += ransomOfMonth.PaidMoney;
                         }
+                        else
+                        {
+                            totalRansom = 0;
+                        }
 
                         // Get money liquidation paid each day
                         var liquidationOfMonth = await _liquidationService.GetLiquidationById(contract.ContractId);
@@ -226,8 +232,12 @@ namespace Services.Services
                         {
                             totalLiquidation += liquidationOfMonth.LiquidationMoney;
                         }
+                        else
+                        {
+                            totalLiquidation = 0;
+                        }
                         ledger.Revenue = totalLiquidation + totalRansom + totalInterestGet;
-                        ledger.Loan = contract.Loan;
+                        ledger.Loan = totalLoan;
                         ledger.Profit = ledger.Revenue - ledger.Loan;
                         _ledgerService.UpdateLedger(ledger);
                     }

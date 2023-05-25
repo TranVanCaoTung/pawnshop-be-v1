@@ -11,7 +11,7 @@ namespace Services.Services.IServices
 {
     public interface IUserService
     {
-        Task<bool> CreateUser(UserDTO user);
+        Task<bool> CreateUser(DisplayUserCreate user);
         Task<IEnumerable<User>> GetAllUsers(int num);
         Task<DisplayUser> GetUserById(Guid userId);
         Task<bool> UpdateUser(User user, int branchId);

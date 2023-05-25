@@ -46,7 +46,7 @@ namespace Services.Services
             return result;
         }
 
-        public async Task<IEnumerable<Ledger>> GetLedgersByBranchId(int branchId, int year)
+        public async Task<IEnumerable<Ledger>> GetLedgersByYearByBranchId(int branchId, int year)
         {
             try
             {
@@ -54,6 +54,9 @@ namespace Services.Services
                             .Where(l => l.BranchId == branchId && l.ToDate.Year == year)
                             .OrderBy(l => l.ToDate.Month)
                             .ToListAsync();
+                //var ledgerList = await _dbContext.Set<Ledger>()
+                //            .Where(l => l.BranchId == branchId)
+                //            .ToListAsync();
                 if (ledgerList != null)
                 {
                     foreach (var ledger in ledgerList)

@@ -20,9 +20,11 @@ namespace PawnShopBE.Core.Display
         public DateTime? UpdateTime { get; set; }
         public int Status { get; set; }
         public ICollection<DisplayUserBranch> UserBranches { get; set; }
+        public ICollection<DisplayPermission> UserPermission { get; set; }
         public DisplayUser()
         {
             UserBranches = new List<DisplayUserBranch>();
+            UserPermission = new List<DisplayPermission>();
         }
     }
 }

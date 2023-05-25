@@ -37,7 +37,7 @@ namespace Services.Services
             _userBranchService = userBranchService;
             _permissionService = permissionService;
         }
-        public async Task<bool> CreateUser(UserDTO userDTO)
+        public async Task<bool> CreateUser(DisplayUserCreate userDTO)
         {
             var user = _mapper.Map<User>(userDTO);
             if (user != null)
@@ -229,13 +229,11 @@ namespace Services.Services
                 var userUpdate = await _unitOfWork.Users.GetById(user.UserId);
                 if (userUpdate != null)
                 {
-                    userUpdate.UserName = user.UserName;
                     userUpdate.Status = user.Status;
                     userUpdate.Email = user.Email;
                     userUpdate.Phone = user.Phone;
                     userUpdate.Address = user.Address;
                     userUpdate.FullName = user.FullName;
-                    userUpdate.Role = user.Role;
                     userUpdate.UpdateTime = DateTime.Now;
                     var userBranch = new UserBranch();
                     userBranch.UserId = user.UserId;

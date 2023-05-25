@@ -111,18 +111,24 @@ namespace Services.Services
                                         on contract.ContractAssetId equals asset.ContractAssetId
                                         join pawnableProduct in _dbContextClass.PawnableProduct
                                         on asset.PawnableProductId equals pawnableProduct.PawnableProductId
+                                        join liquidation in _dbContextClass.Liquidtation
+                                        on contract.ContractId equals liquidation.ContractId
                                         where contract.ContractId == contractId
                                         select new
                                         {
                                             AssetName = asset.ContractAssetName,
-                                            TypeOfProduct = pawnableProduct.TypeOfProduct
+                                            TypeOfProduct = pawnableProduct.TypeOfProduct,
+                                            LiquidationMoney = liquidation.LiquidationMoney,
+                                            CreatedDate = liquidation.liquidationDate,
+                                            Description = liquidation.Description
                                         };
                 foreach (var row in ContractJoinAsset)
                 {
                     displayLiquidationDetail.AssetName = row.AssetName;
                     displayLiquidationDetail.TypeOfProduct = row.TypeOfProduct;
-                    displayLiquidationDetail.LiquidationDate = DateTime.Now;
-                    displayLiquidationDetail.LiquidationMoney = 0;
+                    displayLiquidationDetail.LiquidationDate = row.CreatedDate;
+                    displayLiquidationDetail.LiquidationMoney = row.LiquidationMoney;
+                    displayLiquidationDetail.Description = row.Description;
                 }
             }
             catch (Exception e)
@@ -140,7 +146,7 @@ namespace Services.Services
             {
                 liquidtationUpdate.ContractId = liquidtation.ContractId;
                 liquidtationUpdate.LiquidationMoney = liquidtation.LiquidationMoney;
-                liquidtationUpdate.liquidationDate = liquidtation.liquidationDate;
+                liquidtationUpdate.liquidationDate = liquidtation.liquidationDate.Date;
                 liquidtationUpdate.Description = liquidtation.Description;
                 _unit.Liquidations.Update(liquidtationUpdate);
                 var result = _unit.Save();

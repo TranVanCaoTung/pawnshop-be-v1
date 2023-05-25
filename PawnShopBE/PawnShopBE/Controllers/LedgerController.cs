@@ -35,7 +35,7 @@ namespace PawnShopBE.Controllers
         [HttpGet("getbyBranchId/{branchId}/{year}")]
         public async Task<IActionResult> GetByBranchId(int branchId, int year)
         {
-            var respone = await _ledgerService.GetLedgersByBranchId(branchId, year);
+            var respone = await _ledgerService.GetLedgersByYearByBranchId(branchId, year);
             if (respone != null)
             {
                 return Ok(respone);

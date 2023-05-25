@@ -35,7 +35,7 @@ namespace PawnShopBE.Controllers
 
 
         [HttpPost("createUser")]
-        public async Task<IActionResult> CreateUser(UserDTO request)
+        public async Task<IActionResult> CreateUser(DisplayUserCreate request)
         {
             var response = await _userService.CreateUser(request);
             return (response) ? Ok(response) : BadRequest(response);
@@ -61,7 +61,7 @@ namespace PawnShopBE.Controllers
                     }
                 }
             }
-            return (userListByBranch != null) ? Ok(userListByBranch.OrderByDescending(x => x.UserId)) : NotFound();
+            return (userListByBranch != null) ? Ok(userListByBranch.OrderByDescending(x => x.CreateTime)) : NotFound();
         }
 
         [HttpGet("getUserById/{userId:guid}")]

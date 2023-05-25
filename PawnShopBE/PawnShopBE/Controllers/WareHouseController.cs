@@ -86,5 +86,20 @@ namespace PawnShopBE.Controllers
             }
             return BadRequest();
         }
+        [HttpGet("getAllActive/{numPage}")]
+        public async Task<IActionResult> GetAllActive(int numPage)
+        {
+
+            var respone = await _wareHouseService.GetWareHouse(numPage);
+
+            if (respone != null)
+            {
+                return Ok(respone.Where(x => x.Status == 1).OrderByDescending(x => x.WarehouseId));
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
     }
 }

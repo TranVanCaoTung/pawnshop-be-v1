@@ -142,6 +142,8 @@ namespace PawnShopBE.Helpers
 
             // Mapping from User to UserRepsonse
             CreateMap<User, UserRepsonse>();
+            // Mapping from DisplayUSerCreate to User  
+            CreateMap<DisplayUserCreate, User>().ReverseMap();
 
             // Mapping from logAsset to DisplayLogAsset
             CreateMap<LogAsset, DisplayLogAsset>().ReverseMap();

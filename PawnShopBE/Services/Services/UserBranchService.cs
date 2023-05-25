@@ -52,15 +52,25 @@ namespace Services.Services
 
         public async Task<bool> UpdateUserBranch(UserBranch userBranch)
         {
-            if (userBranch != null)
+            var userBranchUpdate = _dbContextClass.UserBranches.FirstOrDefault(x => x.UserId == userBranch.UserId);
+            if (userBranchUpdate != null)
             {
-                _unitOfWork.UserBranchs.Update(userBranch);
-                var result = _unitOfWork.Save();
+                var existingBranchId = userBranchUpdate.BranchId;  // Store the existing BranchId
 
-                if (result > 0)
-                    return true;
-                else
-                    return false;
+                _dbContextClass.UserBranches.Remove(userBranchUpdate);  // Delete the existing UserBranch entity
+                _dbContextClass.SaveChanges();  // Save the deletion
+
+                // Create a new UserBranch entity with the updated BranchId
+                var newUserBranch = new UserBranch
+                {
+                    UserId = userBranch.UserId,
+                    BranchId = userBranch.BranchId
+                };
+
+                _dbContextClass.UserBranches.Add(newUserBranch);  // Associate the new UserBranch entity with the new BranchId
+                _dbContextClass.SaveChanges();  // Save the changes
+
+                return true;
             }
             return false;
         }

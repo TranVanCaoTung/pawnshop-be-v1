@@ -71,7 +71,7 @@ namespace Services.Services
                 return null;
             }
             // Get all ledger equal to branchId and year
-            var ledgerList = await _ledgerService.GetLedgersByBranchId(branchId, year);
+            var ledgerList = await _ledgerService.GetLedgersByYearByBranchId(branchId, year);
             // Get all contract that not close and equal to branchId to get total loan
             var contractList = await _contract.GetAllContracts();
             contractList = contractList.Where(x => x.ContractStartDate.Year == year);

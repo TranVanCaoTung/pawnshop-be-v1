@@ -57,7 +57,7 @@ namespace PawnShopBE.Infrastructure.Repositories
         public T SingleOrDefault(T entity, Func<T,bool> function)
         {
             return _dbContext.Set<T>().SingleOrDefault(function);
-        }
+         }
 
         public async Task<IEnumerable<T>> TakePage(int number,IEnumerable<T> list)
         {

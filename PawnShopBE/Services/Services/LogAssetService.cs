@@ -66,7 +66,6 @@ namespace Services.Services
             {
                 logAssetUpdate.ImportImg = logAsset.ImportImg;
                 logAssetUpdate.ExportImg = logAsset.ExportImg;
-                logAssetUpdate.Description = logAsset.Description;
                 _unit.LogAssets.Update(logAssetUpdate);
                 var result = _unit.Save();
                 if (result > 0)

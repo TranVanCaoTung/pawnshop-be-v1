@@ -65,6 +65,7 @@ namespace PawnShopBE.Controllers
                 }
                 var userPermissions = await _permissionService.ShowPermission(userId);
                 var user = await _userService.GetUserById(userId);
+                user.UserPermission = (ICollection<Core.Display.DisplayPermission>)userPermissions;
                 return Ok(new
                 {
                     User = user,

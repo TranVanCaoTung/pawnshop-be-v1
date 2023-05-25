@@ -12,5 +12,6 @@ namespace PawnShopBE.Core.Display
         public string AssetName { get; set; }
         public decimal LiquidationMoney { get; set; }
         public DateTime LiquidationDate { get; set; }
+        public string Description { get; set; }
     }
 }
